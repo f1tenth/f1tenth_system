@@ -13,6 +13,7 @@ rplidar_node:
     publish_multiecho: false
     cluster: 1
     skip: 0
+    flip_x_axis: true
 
 
 
