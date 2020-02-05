@@ -26,7 +26,7 @@ AckermannToVesc::AckermannToVesc(ros::NodeHandle nh, ros::NodeHandle private_nh)
     return;
 
   current_vel = 0.0;
-  vel_diff_thresh = 0.5;
+  vel_diff_thresh = 0.3;
 
   // create publishers to vesc electric-RPM (speed) and servo commands
   erpm_pub_ = nh.advertise<std_msgs::Float64>("commands/motor/speed", 10);
@@ -52,7 +52,7 @@ void AckermannToVesc::ackermannCmdCallback(const AckermannMsgPtr& cmd)
   servo_msg->data = steering_to_servo_gain_ * cmd->drive.steering_angle + steering_to_servo_offset_;
 
   // brake msg
-  std::msgs::Float64::Ptr brake_msg(new std_msgs::Float64);
+  std_msgs::Float64::Ptr brake_msg(new std_msgs::Float64);
   brake_msg->data = 20000;
 
   // publish
