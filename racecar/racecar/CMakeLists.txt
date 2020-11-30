@@ -79,7 +79,6 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES racecar_launch
   CATKIN_DEPENDS
-    razor_imu_9dof
     tf
     tf2_ros
     urg_node

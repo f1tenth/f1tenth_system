@@ -16,7 +16,6 @@
 
   <!--<build_depend></build_depend>-->
 
-  <run_depend>razor_imu_9dof</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>tf2_ros</run_depend>
   <run_depend>urg_node</run_depend>

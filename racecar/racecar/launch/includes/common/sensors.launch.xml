@@ -11,7 +11,4 @@
 <!-- Set the port to connect to here -->
   <param name="port" type="string" value="/dev/ttyACM0"/> 
 
-  <!-- imu -->
-  <!--node pkg="razor_imu_9dof" type="imu_node.py" name="imu_node" /-->
-
 </launch>
