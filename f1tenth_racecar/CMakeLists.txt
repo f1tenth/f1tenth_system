@@ -1,14 +1,19 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(f1tenth_racecar)
 
-find_package(catkin REQUIRED rospy)
+find_package(catkin REQUIRED
+  actionlib
+  rospy
+  rosservice
+  rostopic
+  sensor_msgs
+)
 
 catkin_package(
   CATKIN_DEPENDS
     ackermann_cmd_mux
     hector_mapping
     joy
-    mapping
     robot_pose_ekf
     rosbag
     rostopic
