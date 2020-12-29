@@ -24,10 +24,8 @@
   <exec_depend>hector_mapping</exec_depend>
   <exec_depend>joy</exec_depend>
   <exec_depend>map_server</exec_depend>
-  <exec_depend>mapping</exec_depend>
   <exec_depend>robot_pose_ekf</exec_depend>
   <exec_depend>rosbag</exec_depend>
-  <exec_depend>rostopic</exec_depend>
   <exec_depend>rviz</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>tf</exec_depend>
