@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_laser"
+        args="0.285 0.0 0.127 0.0 0.0 0.0 1.0 /base_link /laser" />
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_base_footprint"
+        args="0.0 0.0 0.0     0.0 0.0 0.0 1.0 /base_link /base_footprint" />
+</launch>

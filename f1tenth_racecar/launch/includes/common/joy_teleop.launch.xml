@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="joy_teleop_config"
+       default="$(find f1tenth_racecar)/config/joy_teleop.yaml" />
+
+  <rosparam file="$(arg joy_teleop_config)" command="load" />
+
+  <node pkg="joy" type="joy_node" name="joy_node" />
+
+  <node pkg="f1tenth_racecar" type="joy_teleop.py" name="joy_teleop" />
+</launch>
