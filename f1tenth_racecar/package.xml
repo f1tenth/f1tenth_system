@@ -13,6 +13,12 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>actionlib</depend>
+  <depend>rospy</depend>
+  <depend>rosservice</depend>
+  <depend>rostopic</depend>
+  <depend>sensor_msgs</depend>
+
   <exec_depend>ackermann_cmd_mux</exec_depend>
   <exec_depend>hector_mapping</exec_depend>
   <exec_depend>joy</exec_depend>
