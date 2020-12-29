@@ -7,8 +7,8 @@
   <rosparam file="$(arg sensors_config)" command="load" />
 
   <!-- laser -->
-  <node pkg="hokuyo_node" type="hokuyo_node" name="laser_node" />
+  <node pkg="urg_node" type="urg_node" name="laser_node" />
 <!-- Set the port to connect to here -->
-  <param name="port" type="string" value="/dev/ttyACM0"/> 
+  <param name="serial_port" type="string" value="/dev/sensors/hokuyo"/> 
 
 </launch>
