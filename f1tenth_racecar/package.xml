@@ -30,4 +30,6 @@
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>tf</exec_depend>
   <exec_depend>urg_node</exec_depend>
+  <exec_depend>vesc_ackermann</exec_depend>
+  <exec_depend>vesc_driver</exec_depend>
 </package>
