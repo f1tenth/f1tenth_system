@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="nx_compute" default="false" />
+
   <group ns="vesc">
     <!-- joystick node -->
-    <include file="$(find f1tenth_racecar)/launch/includes/common/joy_teleop.launch.xml" />
+    <include file="$(find f1tenth_racecar)/launch/includes/common/joy_teleop.launch.xml">
+      <arg name="nx_compute" value="$(arg nx_compute)" />
+    </include>
 
     <!-- Spawn MUXs -->
     <include file="$(find f1tenth_racecar)/launch/mux.launch" />

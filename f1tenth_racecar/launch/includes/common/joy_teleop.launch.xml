@@ -1,7 +1,12 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="nx_compute" default="false" />
+
   <arg name="joy_teleop_config"
-       default="$(find f1tenth_racecar)/config/joy_teleop.yaml" />
+       default="$(find f1tenth_racecar)/config/joy_teleop.yaml" unless="$(arg nx_compute)" />
+
+  <arg name="joy_teleop_config"
+       default="$(find f1tenth_racecar)/config/joy_teleop_nx.yaml" if="$(arg nx_compute)" />
 
   <rosparam file="$(arg joy_teleop_config)" command="load" />
 
