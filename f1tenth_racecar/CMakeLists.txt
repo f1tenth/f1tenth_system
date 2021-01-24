@@ -12,9 +12,7 @@ find_package(catkin REQUIRED
 catkin_package(
   CATKIN_DEPENDS
     ackermann_cmd_mux
-    hector_mapping
     joy
-    robot_pose_ekf
     rosbag
     rostopic
     rviz
