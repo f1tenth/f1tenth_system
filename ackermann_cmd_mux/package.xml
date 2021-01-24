@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>ackermann_cmd_mux</name>
+  <version>0.7.0</version>
+  <description>
+     A multiplexer for ackermann command velocity inputs. Arbitrates incoming ackermann_cmd messages from
+     several topics, allowing one topic at a time to command the robot, based on priorities. It also
+     deallocates current allowed topic if no messages are received after a configured timeout. All topics,
+     together with their priority and timeout are configured through a YAML file, that can be reload at
+     runtime. Blatantly derived / copied from yujin_ocs/yocs_cmd_vel_mux.
+  </description>
+  <maintainer email="boulet@ll.mit.edu">Michael Boulet</maintainer>
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/ackermann_cmd_mux</url>
+  <url type="repository">https://github.mit.edu/racecar/racecar</url>
+  <url type="bugtracker">https://github.mit.edu/racecar/racecar/issues</url>
+  <author>Jorge Santos Simon</author>
+  <author>Michael Boulet</author>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>ackermann_msgs</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>nodelet</depend>
+  <depend>pluginlib</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>yaml-cpp</depend>
+
+  <export>
+    <nodelet plugin="${prefix}/plugins/nodelets.xml" />
+  </export>
+</package>

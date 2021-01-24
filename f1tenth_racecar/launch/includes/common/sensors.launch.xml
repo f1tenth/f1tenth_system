@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- laser -->
+  <node pkg="urg_node" type="urg_node" name="laser_node">
+    <param name="serial_port" type="string" value="/dev/sensors/hokuyo"/>
+  </node>
+</launch>

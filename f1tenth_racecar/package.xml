@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>f1tenth_racecar</name>
+  <version>0.0.0</version>
+  <description>The f1tenth_racecar package</description>
+  <maintainer email="whitleysoftwareservices@gmail.com">Josh Whitley</maintainer>
+  <license>BSD</license>
+  <url type="bugtracker">http://github.com/f1tenth/f1tenth_system/issues</url>
+  <url type="repository">http://github.com/f1tenth/f1tenth_system</url>
+  <author email="whitleysoftwareservices@gmail.com">Josh Whitley</author>
+  <author>Michael Boulet</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>actionlib</depend>
+  <depend>rospy</depend>
+  <depend>rosservice</depend>
+  <depend>rostopic</depend>
+  <depend>sensor_msgs</depend>
+
+  <exec_depend>ackermann_cmd_mux</exec_depend>
+  <exec_depend>joy</exec_depend>
+  <exec_depend>rosbag</exec_depend>
+  <exec_depend>rviz</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>urg_node</exec_depend>
+  <exec_depend>vesc_ackermann</exec_depend>
+  <exec_depend>vesc_driver</exec_depend>
+</package>

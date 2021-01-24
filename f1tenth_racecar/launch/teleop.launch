@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="nx_compute" default="false" />
+
+  <group ns="vesc">
+    <!-- joystick node -->
+    <include file="$(find f1tenth_racecar)/launch/includes/common/joy_teleop.launch.xml">
+      <arg name="nx_compute" value="$(arg nx_compute)" />
+    </include>
+
+    <!-- Spawn MUXs -->
+    <include file="$(find f1tenth_racecar)/launch/mux.launch" />
+
+    <!-- start electronic speed controller driver -->
+    <include file="$(find f1tenth_racecar)/launch/includes/vesc.launch.xml" />
+  </group>
+
+  <!-- start laser scanner -->
+  <include file="$(find f1tenth_racecar)/launch/includes/common/sensors.launch.xml" />
+
+  <!-- static transforms, e.g. base_link to imu -->
+  <include file="$(find f1tenth_racecar)/launch/includes/static_transforms.launch.xml" />
+</launch>
