@@ -33,3 +33,6 @@
 
 # macos
 .DS_Store
+
+# py
+*.pyc

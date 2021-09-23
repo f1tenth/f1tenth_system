@@ -1,28 +1,34 @@
-# driver_base
-You'll also need the driver_base package, , you could get this package via:
+# f1tenth_system
+Drivers onboard f1tenth race cars. This branch is under development for migration to ROS2.
 
-```sudo apt-get install ros-<distro>-driver-base```
+## External Dependencies
+1. ackermann_msgs [https://index.ros.org/r/ackermann_msgs/#foxy](https://index.ros.org/r/ackermann_msgs/#foxy)
+2. urg_node [https://index.ros.org/p/urg_node/#foxy](https://index.ros.org/p/urg_node/#foxy)
+3. joy [https://index.ros.org/p/joy/#foxy](https://index.ros.org/p/joy/#foxy)
+4. joy_teleop [https://index.ros.org/p/joy_teleop/#foxy](https://index.ros.org/p/joy_teleop/#foxy)
+3. vesc? not external right now but will be listed on ROS index [TODO](TODO)
+4. rosbridge_suite [https://index.ros.org/p/rosbridge_suite/#foxy-overview](https://index.ros.org/p/rosbridge_suite/#foxy-overview)
 
-# f110_system
-Code/Drivers onboard f110 race cars.
+## Included packages
+1. f1tenth_stack: has the throttle interpolator and all bringup launch scripts and launch configs
+2. ackermann_mx: modified from twist_mux
+3. vesc: will be external when listed on ROS index
 
-## ackermann_msgs
-The ROS message definitions for ackermann steering.
+## Nodes launched in bringup
+1. joy
+2. joy_teleop
+3. ackermann_to_vesc_node
+4. vesc_to_odom_node
+5. vesc_driver_node
+6. throttle_interpolator.py
+8. urg_node
+9. ackermann_mux
+10. rosbridge_websocket.launch
 
-## hokuyo_node
-The driver for Hokuyo 10LX and Hokuyo 30LX.
-
-## joystick_drivers
-The driver for Linux compatible joysticks
-
-## racecar
-The package including launch files handling starting the car, and the parameters for Odometry tuning, motor/servo settings.
-
-## serial
-A cross-platform library for interfacing with rs-232 serial like ports written in C++.
-
-## vesc
-The package handling communication with the VESC 6 Plus.
-
-## waypoint_logger
-The node that records the car's current position in the world, requires particle_filter to work.
+## TODOs
+- [x] port the bringup package to ROS2
+- [ ] finish vesc imu implementation
+- [ ] test urg_node on car
+- [ ] test joy on car
+- [ ] test bringup launch on car
+- [ ] test foxglove studio integration over rosbridge
