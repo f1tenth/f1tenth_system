@@ -29,37 +29,37 @@ class ThrottleInterpolator(Node):
     def __init__(self):
         super().__init__('throttle_interpolator')
 
-        self.declare_parameter('rpm_input_topic', '/vesc/commands/motor/unsmoothed_speed')
-        self.declare_parameter('rpm_output_topic', '/vesc/commands/motor/speed')
-        self.declare_parameter('servo_input_topic', '/vesc/commands/servo/unsmoothed_position')
-        self.declare_parameter('servo_output_topic', '/vesc/commands/servo/position')
-        self.declare_parameter('/vesc/max_acceleration')
-        self.declare_parameter('/vesc/vesc_driver/speed_max')
-        self.declare_parameter('/vesc/vesc_driver/speed_min')
-        self.declare_parameter('/vesc/throttle_smoother_rate')
-        self.declare_parameter('/vesc/speed_to_erpm_gain')
-        self.declare_parameter('/vesc/max_servo_speed')
-        self.declare_parameter('/vesc/steering_angle_to_servo_gain')
-        self.declare_parameter('/vesc/servo_smoother_rate')
-        self.declare_parameter('/vesc/vesc_driver/servo_max')
-        self.declare_parameter('/vesc/vesc_driver/servo_min')
-        self.declare_parameter('/vesc/steering_angle_to_servo_offset')
+        self.declare_parameter('rpm_input_topic', 'commands/motor/unsmoothed_speed')
+        self.declare_parameter('rpm_output_topic', 'commands/motor/speed')
+        self.declare_parameter('servo_input_topic', 'commands/servo/unsmoothed_position')
+        self.declare_parameter('servo_output_topic', 'commands/servo/position')
+        self.declare_parameter('max_acceleration')
+        self.declare_parameter('speed_max')
+        self.declare_parameter('speed_min')
+        self.declare_parameter('throttle_smoother_rate')
+        self.declare_parameter('speed_to_erpm_gain')
+        self.declare_parameter('max_servo_speed')
+        self.declare_parameter('steering_angle_to_servo_gain')
+        self.declare_parameter('servo_smoother_rate')
+        self.declare_parameter('servo_max')
+        self.declare_parameter('servo_min')
+        self.declare_parameter('steering_angle_to_servo_offset')
 
         self.rpm_input_topic = self.get_param('rpm_input_topic').value
         self.rpm_output_topic = self.get_param('rpm_output_topic').value
         self.servo_input_topic = self.get_param('servo_input_topic').value
         self.servo_output_topic = self.get_param('servo_output_topic').value
-        self.max_acceleration = self.get_param('/vesc/max_acceleration').value
-        self.max_rpm = self.get_param('/vesc/vesc_driver/speed_max').value
-        self.min_rpm = self.get_param('/vesc/vesc_driver/speed_min').value
-        self.throttle_smoother_rate = self.get_param('/vesc/throttle_smoother_rate').value
-        self.speed_to_erpm_gain = self.get_param('/vesc/speed_to_erpm_gain').value
-        self.max_servo_speed = self.get_param('/vesc/max_servo_speed').value
-        self.steering_angle_to_servo_gain = self.get_param('/vesc/steering_angle_to_servo_gain').value
-        self.servo_smoother_rate = self.get_param('/vesc/servo_smoother_rate').value
-        self.max_servo = self.get_param('/vesc/vesc_driver/servo_max')
-        self.min_servo = self.get_param('/vesc/vesc_driver/servo_min')
-        self.last_servo = self.get_param('/vesc/steering_angle_to_servo_offset')
+        self.max_acceleration = self.get_param('max_acceleration').value
+        self.max_rpm = self.get_param('speed_max').value
+        self.min_rpm = self.get_param('speed_min').value
+        self.throttle_smoother_rate = self.get_param('throttle_smoother_rate').value
+        self.speed_to_erpm_gain = self.get_param('speed_to_erpm_gain').value
+        self.max_servo_speed = self.get_param('max_servo_speed').value
+        self.steering_angle_to_servo_gain = self.get_param('steering_angle_to_servo_gain').value
+        self.servo_smoother_rate = self.get_param('servo_smoother_rate').value
+        self.max_servo = self.get_param('servo_max')
+        self.min_servo = self.get_param('servo_min')
+        self.last_servo = self.get_param('steering_angle_to_servo_offset')
 
         self.last_rpm = 0
         self.desired_rpm = self.last_rpm

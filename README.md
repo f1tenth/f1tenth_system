@@ -35,4 +35,76 @@ Drivers onboard f1tenth race cars. This branch is under development for migratio
 
 ## Notes and Gotchas
 - joy_teleop installed through rosdep/apt has a bug where the stamp is not using the correct format, clone from the teleop_tools repo on foxy-devel branch and put it in f1tenth_stack/ so it works correctly.
-- 
+
+## Extra doc to be put in other repos
+### vesc_driver
+1. Parameters:
+    - duty_cycle_min, duty_cycle_max
+    - current_min, current_max
+    - brake_min, brake_max
+    - speed_min, speed_max
+    - position_min, position_max
+    - servo_min, servo_max
+2. Publishes to:
+    - sensors/core
+    - sensors/servo_position_command
+3. Subscribes to:
+    - commands/motor/duty_cycle
+    - commands/motor/current
+    - commands/motor/brake
+    - commands/motor/speed
+    - commands/motor/position
+    - commands/servo/position
+
+### ackermann_to_vesc
+1. Parameters:
+    - speed_to_erpm_gain
+    - speed_to_erpm_offset
+    - steering_angle_to_servo_gain
+    - steering_angle_to_servo_offset
+2. Publishes to:
+    - ackermann_cmd
+3. Subscribes to:
+    - commands/motor/speed
+    - commands/servo/position
+
+### vesc_to_odom
+1. Parameters:
+    - odom_frame
+    - base_frame
+    - use_servo_cmd_to_calc_angular_velocity
+    - speed_to_erpm_gain
+    - speed_to_erpm_offset
+    - steering_angle_to_servo_gain
+    - steering_angle_to_servo_offset
+    - wheelbase
+    - publish_tf
+2. Publishes to:
+    - odom
+3. Subscribes to:
+    - sensors/core
+    - sensors/servo_position_command
+
+### throttle_interpolator
+1. Parameters:
+    - rpm_input_topic
+    - rpm_output_topic
+    - servo_input_topic
+    - servo_output_topic
+    - max_acceleration
+    - speed_max
+    - speed_min
+    - throttle_smoother_rate
+    - speed_to_erpm_gain
+    - max_servo_speed
+    - steering_angle_to_servo_gain
+    - servo_smoother_rate
+    - servo_max
+    - servo_min
+    - steering_angle_to_servo_offset
+2. Publishes to:
+    - topic described in rpm_output_topic
+    - topic described in servo_output_topic
+3. Subscribes to:
+    - topic described in rpm_input_topic
+    - topic described in servo_input_topic
