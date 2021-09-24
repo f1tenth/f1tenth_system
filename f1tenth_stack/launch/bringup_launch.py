@@ -105,7 +105,7 @@ def generate_launch_description():
         package='f1tenth_stack',
         executable='throttle_interpolator',
         name='throttle_interpolator_node',
-        parameters=[]
+        parameters=[LaunchConfiguration('vesc_config')]
     )
     urg_node = Node(
         package='urg_node',
@@ -135,6 +135,6 @@ def generate_launch_description():
     ld.add_action(throttle_interpolator_node)
     ld.add_action(urg_node)
     ld.add_action(ackermann_mux_node)
-    ld.add_action(rosbridge_launch)
+    #ld.add_action(rosbridge_launch)
 
     return ld
