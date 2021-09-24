@@ -35,6 +35,7 @@ Drivers onboard f1tenth race cars. This branch is under development for migratio
 
 ## Notes and Gotchas
 - joy_teleop installed through rosdep/apt has a bug where the stamp is not using the correct format, clone from the teleop_tools repo on foxy-devel branch and put it in f1tenth_stack/ so it works correctly.
+- Testing results 09/24/21: mux is working but not correctly, when msgs published to /drive, the deadman switch doesn't work. Deadman switch for teleop works. Odom seems to be not published? 
 
 ## Extra doc to be put in other repos
 ### vesc_driver
