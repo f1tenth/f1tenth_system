@@ -45,21 +45,21 @@ class ThrottleInterpolator(Node):
         self.declare_parameter('servo_min')
         self.declare_parameter('steering_angle_to_servo_offset')
 
-        self.rpm_input_topic = self.get_param('rpm_input_topic').value
-        self.rpm_output_topic = self.get_param('rpm_output_topic').value
-        self.servo_input_topic = self.get_param('servo_input_topic').value
-        self.servo_output_topic = self.get_param('servo_output_topic').value
-        self.max_acceleration = self.get_param('max_acceleration').value
-        self.max_rpm = self.get_param('speed_max').value
-        self.min_rpm = self.get_param('speed_min').value
-        self.throttle_smoother_rate = self.get_param('throttle_smoother_rate').value
-        self.speed_to_erpm_gain = self.get_param('speed_to_erpm_gain').value
-        self.max_servo_speed = self.get_param('max_servo_speed').value
-        self.steering_angle_to_servo_gain = self.get_param('steering_angle_to_servo_gain').value
-        self.servo_smoother_rate = self.get_param('servo_smoother_rate').value
-        self.max_servo = self.get_param('servo_max')
-        self.min_servo = self.get_param('servo_min')
-        self.last_servo = self.get_param('steering_angle_to_servo_offset')
+        self.rpm_input_topic = self.get_parameter('rpm_input_topic').value
+        self.rpm_output_topic = self.get_parameter('rpm_output_topic').value
+        self.servo_input_topic = self.get_parameter('servo_input_topic').value
+        self.servo_output_topic = self.get_parameter('servo_output_topic').value
+        self.max_acceleration = self.get_parameter('max_acceleration').value
+        self.max_rpm = self.get_parameter('speed_max').value
+        self.min_rpm = self.get_parameter('speed_min').value
+        self.throttle_smoother_rate = self.get_parameter('throttle_smoother_rate').value
+        self.speed_to_erpm_gain = self.get_parameter('speed_to_erpm_gain').value
+        self.max_servo_speed = self.get_parameter('max_servo_speed').value
+        self.steering_angle_to_servo_gain = self.get_parameter('steering_angle_to_servo_gain').value
+        self.servo_smoother_rate = self.get_parameter('servo_smoother_rate').value
+        self.max_servo = self.get_parameter('servo_max')
+        self.min_servo = self.get_parameter('servo_min')
+        self.last_servo = self.get_parameter('steering_angle_to_servo_offset')
 
         self.last_rpm = 0
         self.desired_rpm = self.last_rpm
