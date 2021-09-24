@@ -28,7 +28,11 @@ Drivers onboard f1tenth race cars. This branch is under development for migratio
 ## TODOs
 - [x] port the bringup package to ROS2
 - [ ] finish vesc imu implementation
-- [ ] test urg_node on car
-- [ ] test joy on car
+- [x] test urg_node on car
+- [x] test joy on car
 - [ ] test bringup launch on car
 - [ ] test foxglove studio integration over rosbridge
+
+## Notes and Gotchas
+- joy_teleop installed through rosdep/apt has a bug where the stamp is not using the correct format, clone from the teleop_tools repo on foxy-devel branch and put it in f1tenth_stack/ so it works correctly.
+- 
