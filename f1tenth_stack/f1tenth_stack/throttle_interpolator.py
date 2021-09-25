@@ -57,9 +57,9 @@ class ThrottleInterpolator(Node):
         self.max_servo_speed = self.get_parameter('max_servo_speed').value
         self.steering_angle_to_servo_gain = self.get_parameter('steering_angle_to_servo_gain').value
         self.servo_smoother_rate = self.get_parameter('servo_smoother_rate').value
-        self.max_servo = self.get_parameter('servo_max')
-        self.min_servo = self.get_parameter('servo_min')
-        self.last_servo = self.get_parameter('steering_angle_to_servo_offset')
+        self.max_servo = self.get_parameter('servo_max').value
+        self.min_servo = self.get_parameter('servo_min').value
+        self.last_servo = self.get_parameter('steering_angle_to_servo_offset').value
 
         self.last_rpm = 0
         self.desired_rpm = self.last_rpm
