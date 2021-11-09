@@ -26,7 +26,7 @@ joy_teleop:
     human_control:
       type: topic
       interface_type: ackermann_msgs/msg/AckermannDriveStamped
-      topic_name: teleo
+      topic_name: teleop
       deadman_axes: [2]
       deadman_buttons: [4]
       axis_mappings:
