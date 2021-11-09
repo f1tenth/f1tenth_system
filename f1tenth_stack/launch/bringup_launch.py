@@ -124,7 +124,7 @@ def generate_launch_description():
         XMLLaunchDescriptionSource(
             os.path.join(
                 get_package_share_directory('rosbridge_server'),
-                'rosbridge_websocket_launch.xml'))
+                'launch/rosbridge_websocket_launch.xml'))
     )
 
     # finalize
@@ -136,6 +136,6 @@ def generate_launch_description():
     ld.add_action(throttle_interpolator_node)
     ld.add_action(urg_node)
     ld.add_action(ackermann_mux_node)
-    #ld.add_action(rosbridge_launch)
+    ld.add_action(rosbridge_launch)
 
     return ld
