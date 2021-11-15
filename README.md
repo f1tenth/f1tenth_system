@@ -27,10 +27,10 @@ Drivers onboard f1tenth race cars. This branch is under development for migratio
 
 ## TODOs
 - [x] port the bringup package to ROS2
-- [ ] finish vesc imu implementation
+- [x] finish vesc imu implementation
 - [x] test urg_node on car
 - [x] test joy on car
-- [ ] test bringup launch on car
+- [x] test bringup launch on car
 - [ ] test foxglove studio integration over rosbridge
 
 ## Notes and Gotchas
@@ -49,6 +49,8 @@ Drivers onboard f1tenth race cars. This branch is under development for migratio
 2. Publishes to:
     - sensors/core
     - sensors/servo_position_command
+    - sensors/imu
+    - sensors/imu/raw
 3. Subscribes to:
     - commands/motor/duty_cycle
     - commands/motor/current
