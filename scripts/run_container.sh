@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # create workspace on host, in home directory
-mkdir $HOME/f1tenth_ws
+mkdir -p $HOME/f1tenth_ws
 
 # give docker permission to use X
 sudo xhost +si:localuser:root
