@@ -83,13 +83,13 @@ class ThrottleInterpolator(Node):
         self.servo_timer = self.create_timer(1.0/self.servo_smoother_rate, self._publish_servo_command)
 
         self.max_delta_rpm = abs(self.speed_to_erpm_gain * self.max_acceleration / self.throttle_smoother_rate)
-        self.rmp_timer = self.create_timer(1.0/self.max_delta_rpm, self._publish_throttle_command)
+        self.rmp_timer = self.create_timer(1.0/self.throttle_smoother_rate, self._publish_throttle_command)
 
     def _publish_throttle_command(self):
         desired_delta = self.desired_rpm-self.last_rpm
         clipped_delta = max(min(desired_delta, self.max_delta_rpm), -self.max_delta_rpm)
         smoothed_rpm = self.last_rpm + clipped_delta
-        self.last_rpm = smoothed_rpm         
+        self.last_rpm = smoothed_rpm
         rpm_msg = Float64()
         rpm_msg.data = float(smoothed_rpm)
         self.rpm_output.publish(rpm_msg)

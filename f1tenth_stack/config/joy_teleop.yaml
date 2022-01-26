@@ -1,7 +1,6 @@
 joy:
   ros__parameters:
-    # TODO: this will change after setting up udev rules
-    dev: /dev/input/js0
+    device_name: /dev/input/joypad-f710
     deadzone: 0.01
     autorepeat_rate: 20.0
     coalesce_interval: 0.01
@@ -12,14 +11,13 @@ joy_teleop:
       type: topic
       interface_type: ackermann_msgs/msg/AckermannDriveStamped
       topic_name: teleop
-      deadman_axes: [4]
       axis_mappings:
         drive-speed:
           axis: 1
           scale: 0.0
           offset: 0.0
         drive-steering_angle:
-          axis: 2
+          axis: 3
           scale: 0.0
           offset: 0.0
 
@@ -34,7 +32,7 @@ joy_teleop:
           scale: 5.0
           offset: 0.0
         drive-steering_angle:
-          axis: 2
+          axis: 3
           scale: 0.34
           offset: 0.0
 
