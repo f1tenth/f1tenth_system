@@ -3,10 +3,20 @@
 Drivers onboard f1tenth race cars. This branch is under development for migration to ROS2.
 
 ## Launching teleop
+```bash
+cd scripts
+./run_container.sh
+```
+This will bring up a container that contains foxy and the `f1tenth_stack`. Display is forwarded so `rviz` also works inside the container.
 
 ## Deadman's switch
+On Logitech F-710 joysticks, the LB button is the deadman's switch for teleop, and the RB button is the deadman's switch for navigation.
 
 ## Topics
+
+- `/drive`: Topic for autonomous navigation, uses `AckermannDriveStamped` messages.
+- `/scan`: Topic for `LaserScan` messages.
+- `/vesc/odom`: Topic for `Odometry` messages.
 
 ## External Dependencies
 
@@ -29,7 +39,7 @@ Drivers onboard f1tenth race cars. This branch is under development for migratio
 3. ackermann_to_vesc_node
 4. vesc_to_odom_node
 5. vesc_driver_node
-6. throttle_interpolator.py
+<!-- 6. throttle_interpolator.py -->
 7. urg_node
 8. ackermann_mux
 9. rosbridge_websocket.launch
