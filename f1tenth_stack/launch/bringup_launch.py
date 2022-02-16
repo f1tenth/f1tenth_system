@@ -121,16 +121,9 @@ def generate_launch_description():
         remappings=[('ackermann_cmd_out', 'ackermann_drive')]
     )
     static_tf_node = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_baselink_to_laser',
-        arguments=['0.27', '0.0', '0.11', '0.0', '0.0', '0.0', 'base_link', 'laser']
-    )
-    static_odom_tf_node = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_baselink_to_odom',
-        arguments=['0.0', '0.0', '0.0', '0.0', '0.0', '0.0', 'base_link', 'odom']
+        package='f1tenth_stack',
+        executable='tf_publisher',
+        name='f1tenth_tf_publisher'
     )
 
     # finalize
@@ -143,6 +136,5 @@ def generate_launch_description():
     ld.add_action(urg_node)
     ld.add_action(ackermann_mux_node)
     ld.add_action(static_tf_node)
-    ld.add_action(static_odom_tf_node)
 
     return ld
