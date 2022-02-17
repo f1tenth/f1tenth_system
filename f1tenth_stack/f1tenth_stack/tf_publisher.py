@@ -9,7 +9,7 @@ class FramePublisher(Node):
         super().__init__('f1tenth_tf_publisher')
 
         self.br = TransformBroadcaster(self)
-        self.timer = self.create_timer(0.01, self.timer_callback)
+        self.timer = self.create_timer(0.001, self.timer_callback)
 
     def timer_callback(self):
         t = TransformStamped()

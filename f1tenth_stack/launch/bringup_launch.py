@@ -121,9 +121,10 @@ def generate_launch_description():
         remappings=[('ackermann_cmd_out', 'ackermann_drive')]
     )
     static_tf_node = Node(
-        package='f1tenth_stack',
-        executable='tf_publisher',
-        name='f1tenth_tf_publisher'
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_baselink_to_laser',
+        arguments=['0.27', '0.0', '0.11', '0.0', '0.0', '0.0', 'base_link', 'laser']
     )
 
     # finalize
