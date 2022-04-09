@@ -1,22 +1,20 @@
 # f1tenth_system
 
-Drivers onboard f1tenth race cars. This branch is under development for migration to ROS2.
-
-## Launching teleop
-```bash
-cd scripts
-./run_container.sh
-```
-This will bring up a container that contains foxy and the `f1tenth_stack`. Display is forwarded so `rviz` also works inside the container.
+Drivers onboard f1tenth race cars. This branch is under development for migration to ROS2. See the [documentation of F1TENTH](https://f1tenth.readthedocs.io/en/foxy_test/getting_started/firmware/index.html) on how to get started.
 
 ## Deadman's switch
-On Logitech F-710 joysticks, the LB button is the deadman's switch for teleop, and the RB button is the deadman's switch for navigation.
+On Logitech F-710 joysticks, the LB button is the deadman's switch for teleop, and the RB button is the deadman's switch for navigation. You can also remap buttons. See how on the readthedocs documentation.
 
 ## Topics
 
+### Topics that the driver stack subscribe to
 - `/drive`: Topic for autonomous navigation, uses `AckermannDriveStamped` messages.
+
+### Sensor topics published by the driver stack
 - `/scan`: Topic for `LaserScan` messages.
-- `/vesc/odom`: Topic for `Odometry` messages.
+- `/odom`: Topic for `Odometry` messages.
+- `/sensors/imu/raw`: Topic for `Imu` messages.
+- `/sensors/core`: Topic for telemetry data from the VESC
 
 ## External Dependencies
 
@@ -26,11 +24,11 @@ On Logitech F-710 joysticks, the LB button is the deadman's switch for teleop, a
 4. teleop_tools  [https://index.ros.org/p/teleop_tools/#foxy](https://index.ros.org/p/teleop_tools/#foxy). This is the package for teleop with joysticks in ROS 2.
 5. vesc [GitHub - f1tenth/vesc at ros2](https://github.com/f1tenth/vesc/tree/ros2). This is the driver for VESCs in ROS 2.
 6. ackermann_mux [GitHub - f1tenth/ackermann_mux: Twist multiplexer](https://github.com/f1tenth/ackermann_mux). This is a package for multiplexing ackermann messages in ROS 2.
-7. rosbridge_suite [https://index.ros.org/p/rosbridge_suite/#foxy-overview](https://index.ros.org/p/rosbridge_suite/#foxy-overview) This is a package that allows for websocket connection in ROS 2.
+<!-- 7. rosbridge_suite [https://index.ros.org/p/rosbridge_suite/#foxy-overview](https://index.ros.org/p/rosbridge_suite/#foxy-overview) This is a package that allows for websocket connection in ROS 2. -->
 
 ## Package in this repo
 
-1. f1tenth_stack: has the throttle interpolator and all bringup launch scripts and launch configs
+1. f1tenth_stack: maintains the bringup launch and all parameter files
 
 ## Nodes launched in bringup
 
@@ -39,27 +37,10 @@ On Logitech F-710 joysticks, the LB button is the deadman's switch for teleop, a
 3. ackermann_to_vesc_node
 4. vesc_to_odom_node
 5. vesc_driver_node
-<!-- 6. throttle_interpolator.py -->
-7. urg_node
-8. ackermann_mux
-9. rosbridge_websocket.launch
+6. urg_node
+7. ackermann_mux
 
-## TODOs
-
-- [x] port the bringup package to ROS2
-- [x] finish vesc imu implementation
-- [x] test urg_node on car
-- [ ] test urg_node on car with ethernet and wifi
-- [x] test joy on car
-- [x] test bringup launch on car
-- [ ] test foxglove studio integration over rosbridge
-
-## Notes and Gotchas
-
-- joy_teleop installed through rosdep/apt has a bug where the stamp is not using the correct format, clone from the teleop_tools repo on foxy-devel branch and put it in f1tenth_stack/ so it works correctly.
-- Testing results 09/24/21: mux is working but not correctly, when msgs published to /drive, the deadman switch doesn't work. Deadman switch for teleop works. Odom seems to be not published? 
-
-## Extra doc to be put in other repos
+## Parameters and topics for dependencies
 
 ### vesc_driver
 
