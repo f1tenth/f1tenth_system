@@ -3,6 +3,10 @@
 speed_to_erpm_gain: 4614
 speed_to_erpm_offset: 0.0
 
+# Set gains for converting acceleration to current and brake control values
+accel_to_current_gain: 100
+accel_to_brake_gain: -80
+
 tachometer_ticks_to_meters_gain: 0.00225
 # servo smoother - limits rotation speed and smooths anything above limit
 max_servo_speed: 3.2 # radians/second
