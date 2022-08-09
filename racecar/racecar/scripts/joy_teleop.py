@@ -44,6 +44,9 @@ class JoyTeleop:
         self.offline_actions = []
         self.offline_services = []
 
+        self.joy_data = None
+        self.joy_timeout = rospy.Duration.from_sec(0.5)
+        self.last_received_joy = None
         self.old_buttons = []
 
         teleop_cfg = rospy.get_param("teleop")
@@ -69,16 +72,27 @@ class JoyTeleop:
         # Run a low-freq action updater
         rospy.Timer(rospy.Duration(2.0), self.update_actions)
 
+        # Higher frequency (50 Hz to match MPPI) timer to guarantee safety if the controller disconnects
+        rospy.Timer(rospy.Duration(1/50.), self.check_command)
+
     def joy_callback(self, data):
-        try:
-            for c in self.command_list:
-                if self.match_command(c, data.buttons):
-                    self.run_command(c, data)
-                    # Only run 1 command at a time
-                    break
-        except JoyTeleopException as e:
-            rospy.logerr("error while parsing joystick input: %s", str(e))
-        self.old_buttons = data.buttons
+        self.joy_data = data
+        self.last_received_joy = rospy.Time.now()
+
+    def check_command(self, evt=None):
+        if self.joy_data and self.last_received_joy and rospy.Time.now() - self.last_received_joy < self.joy_timeout:
+            try:
+                for c in self.command_list:
+                    if self.match_command(c, self.joy_data.buttons):
+                        self.run_command(c, self.joy_data)
+                        # Only run 1 command at a time
+                        break
+            except JoyTeleopException as e:
+                rospy.logerr("error while parsing joystick input: %s", str(e))
+            self.old_buttons = self.joy_data.buttons
+        elif not self.joy_data or rospy.Time.now() - self.last_received_joy > self.joy_timeout:
+            self.run_command('default', self.joy_data)
+            rospy.logerr_throttle(10, "Publishing default because no joystick messages")
 
     def register_topic(self, name, command):
         """Add a topic publisher for a joystick command"""
@@ -274,7 +288,7 @@ class JoyTeleop:
         if service_name not in self.service_types:
             try:
                 self.service_types[service_name] = rosservice.get_service_class_by_name(service_name)
-            except ROSServiceException, e:
+            except ROSServiceException as e:
                 raise JoyTeleopException("service {} could not be loaded: {}".format(service_name, str(e)))
         return self.service_types[service_name]
 
