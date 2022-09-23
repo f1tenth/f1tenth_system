@@ -10,3 +10,6 @@
 	path = teleop_tools
 	url = https://github.com/f1tenth/teleop_tools.git
 	branch = foxy-devel
+[submodule "sllidar_ros2"]
+	path = sllidar_ros2
+	url = https://github.com/Slamtec/sllidar_ros2.git
