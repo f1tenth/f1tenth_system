@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Launch file to bring up base station nodes
+# Launch file to bring up control station nodes
 
 import os
 
@@ -64,13 +64,6 @@ def generate_launch_description():
         description='Use simulation/Gazebo clock')
         
     # include launch files
-    slam_toolbox_start = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            os.path.join(slam_toolbox_dir, 'launch/online_async_launch.py')]),
-        launch_arguments={
-            'use_sim_time': use_sim_time
-            }.items()
-    )
     slam_toolbox_start = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(slam_toolbox_dir, 'launch/online_async_launch.py')]),

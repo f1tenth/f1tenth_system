@@ -2,6 +2,16 @@
 
 Drivers onboard f1tenth race cars. This branch is under development for migration to ROS2. See the [documentation of F1TENTH](https://f1tenth.readthedocs.io/en/foxy_test/getting_started/firmware/index.html) on how to get started.
 
+### Pre-requisites:
+* [Install ROS 2](https://index.ros.org/doc/ros2/Installation/Foxy/)
+* Install Navigation2
+
+    ```sudo apt install ros-<ros2_distro>-navigation2 ros-<distro>-nav2-bringup```
+
+* Install SLAM Toolbox
+
+    ```sudo apt install ros-<ros2-distro>-slam-toolbox```
+
 ## Deadman's switch
 On Sony Interactive Entertainment Wireless Controller, the LB button is the deadman's switch for teleop, and the RB button is the deadman's switch for navigation. You can also remap buttons. See how on the readthedocs documentation.
 
@@ -30,10 +40,10 @@ On Sony Interactive Entertainment Wireless Controller, the LB button is the dead
 
 ## Package in this repo
 
-1. f1tenth_stack: maintains the bringup launch and all parameter files
-2. dts_stack: maintains the bringup launch, all parameter files and 
+1. `f1tenth_stack`: maintains the bringup launch and all parameter files
+2. `dts_stack`: maintains control station launch and rover launch, URDF file, all parameter files and a node to convert twist messages to ackermann messages.
 
-## Nodes launched in bringup
+## Nodes launched by rover launch
 
 1. joy
 2. joy_teleop
@@ -41,6 +51,22 @@ On Sony Interactive Entertainment Wireless Controller, the LB button is the dead
 4. vesc_to_odom_node
 5. vesc_driver_node
 6. ackermann_mux
+7. sllidar_node
+
+## Nodes launched by control station launch
+
+1. robot_state_publisher
+2. joint_state_publisher
+3. rviz2
+4. ekf_filter_node
+5. twist_to_ackermann
+6. nav2_controller
+7. nav2_planner
+8. nav2_recoveries
+9. nav2_bt_navigator
+10. nav2_waypoint_follower
+11. nav2_lifecycle_manager
+12. slam_toolbox
 
 ## Parameters and topics for dependencies
 
