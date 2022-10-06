@@ -14,9 +14,9 @@
 	url = https://github.com/SteveMacenski/slam_toolbox.git
 [submodule "sllidar_ros2"]
 	path = sllidar_ros2
-	url = git@github.com:rickaha/sllidar_ros2.git
+	url = git@github.com:RISE-Dependable-Transport-Systems/sllidar_ros2.git
 	branch = main
 [submodule "vesc"]
 	path = vesc
-	url = git@github.com:rickaha/vesc.git
+	url = git@github.com:RISE-Dependable-Transport-Systems/vesc.git
 	branch = ros2
