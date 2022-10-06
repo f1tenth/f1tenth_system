@@ -11,6 +11,14 @@ Drivers onboard f1tenth race cars. This branch is under development for migratio
 * Install SLAM Toolbox
 
     ```sudo apt install ros-<ros2-distro>-slam-toolbox```
+    
+* Install Joint State Publisher
+
+    ```sudo apt install ros-<ros2-distro>-joint-state-publisher```
+    
+* Install Robot Localization
+
+    ```sudo apt install ros-<ros2-distro>-robot-localization```
 
 ## Deadman's switch
 On Sony Interactive Entertainment Wireless Controller, the LB button is the deadman's switch for teleop, and the RB button is the deadman's switch for navigation. You can also remap buttons. See how on the readthedocs documentation.
@@ -36,6 +44,8 @@ On Sony Interactive Entertainment Wireless Controller, the LB button is the dead
 6. ackermann_mux [GitHub - f1tenth/ackermann_mux: Twist multiplexer](https://github.com/f1tenth/ackermann_mux). This is a package for multiplexing ackermann messages in ROS 2.
 7. slam_toolbox [https://github.com/SteveMacenski/slam_toolbox/tree/foxy-devel](https://github.com/SteveMacenski/slam_toolbox/tree/foxy-devel). This is a package for SLAM.
 8. nav2 [https://github.com/ros-planning/navigation2/tree/foxy-devel](https://github.com/ros-planning/navigation2/tree/foxy-devel). This is a ROS 2 navigation library.
+9. joint_state_publisher [https://index.ros.org/p/joint_state_publisher/#foxy](https://index.ros.org/p/joint_state_publisher/#foxy). Package for publishing sensor_msgs/msg/JointState messages for a robot described with URDF.
+10. robot_localization [https://index.ros.org/p/robot_localization/#foxy](https://index.ros.org/p/robot_localization/#foxy). Package of nonlinear state estimation nodes.
 <!-- 7. rosbridge_suite [https://index.ros.org/p/rosbridge_suite/#foxy-overview](https://index.ros.org/p/rosbridge_suite/#foxy-overview) This is a package that allows for websocket connection in ROS 2. -->
 
 ## Package in this repo
