@@ -29,10 +29,10 @@ On Sony Interactive Entertainment Wireless Controller, the LB button is the dead
 ## External Dependencies
 
 1. ackermann_msgs [https://index.ros.org/r/ackermann_msgs/#foxy](https://index.ros.org/r/ackermann_msgs/#foxy).
-2. sllidar_node [https://github.com/Slamtec/sllidar_ros2/tree/main](https://github.com/Slamtec/sllidar_ros2/tree/main) This is the driver for SLAMTEC LiDARs.
+2. sllidar_node [https://github.com/RISE-Dependable-Transport-Systems/sllidar_ros2/tree/main](https://github.com/RISE-Dependable-Transport-Systems/sllidar_ros2/tree/main) This is the driver for SLAMTEC LiDARs.
 3. joy [https://index.ros.org/p/joy/#foxy](https://index.ros.org/p/joy/#foxy). This is the driver for joysticks in ROS 2.
 4. teleop_tools  [https://index.ros.org/p/teleop_tools/#foxy](https://index.ros.org/p/teleop_tools/#foxy). This is the package for teleop with joysticks in ROS 2.
-5. vesc [GitHub - f1tenth/vesc at ros2](https://github.com/f1tenth/vesc/tree/ros2). This is the driver for VESCs in ROS 2.
+5. vesc [https://github.com/RISE-Dependable-Transport-Systems/vesc/tree/ros2](https://github.com/RISE-Dependable-Transport-Systems/vesc/tree/ros2). This is the driver for VESCs in ROS 2.
 6. ackermann_mux [GitHub - f1tenth/ackermann_mux: Twist multiplexer](https://github.com/f1tenth/ackermann_mux). This is a package for multiplexing ackermann messages in ROS 2.
 7. slam_toolbox [https://github.com/SteveMacenski/slam_toolbox/tree/foxy-devel](https://github.com/SteveMacenski/slam_toolbox/tree/foxy-devel). This is a package for SLAM.
 8. nav2 [https://github.com/ros-planning/navigation2/tree/foxy-devel](https://github.com/ros-planning/navigation2/tree/foxy-devel). This is a ROS 2 navigation library.
