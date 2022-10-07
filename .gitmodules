@@ -6,12 +6,6 @@
 	path = teleop_tools
 	url = https://github.com/f1tenth/teleop_tools.git
 	branch = foxy-devel
-[submodule "navigation2"]
-	path = navigation2
-	url = https://github.com/ros-planning/navigation2.git
-[submodule "slam_toolbox"]
-	path = slam_toolbox
-	url = https://github.com/SteveMacenski/slam_toolbox.git
 [submodule "sllidar_ros2"]
 	path = sllidar_ros2
 	url = git@github.com:RISE-Dependable-Transport-Systems/sllidar_ros2.git
