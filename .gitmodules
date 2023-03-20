@@ -14,3 +14,6 @@
 	path = vesc
 	url = git@github.com:RISE-Dependable-Transport-Systems/vesc.git
 	branch = ros2
+[submodule "realsense_ros2"]
+	path = realsense_ros2
+	url = https://github.com/IntelRealSense/realsense-ros.git

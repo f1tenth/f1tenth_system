@@ -8,4 +8,9 @@ ackermann_mux:
       joystick:
         topic   : teleop
         timeout : 0.2
+        priority: 100    
+    locks:
+      navigation_lock:
+        topic   : navigation_lock
+        timeout : 0.0
         priority: 100
