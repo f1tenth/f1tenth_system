@@ -1,7 +1,7 @@
 [submodule "vesc"]
 	path = vesc
 	url = https://github.com/f1tenth/vesc.git
-	branch = ros2
+	branch = foxy
 [submodule "ackermann_mux"]
 	path = ackermann_mux
 	url = https://github.com/f1tenth/ackermann_mux.git
