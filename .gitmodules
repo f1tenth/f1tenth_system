@@ -1,12 +1,12 @@
 [submodule "vesc"]
 	path = vesc
-	url = https://github.com/f1tenth/vesc.git
+	url = git@github.com:NVIDIA-ISAAC-ROS/vesc.git
 	branch = ros2
 [submodule "ackermann_mux"]
 	path = ackermann_mux
-	url = https://github.com/f1tenth/ackermann_mux.git
+	url = git@github.com:NVIDIA-ISAAC-ROS/ackermann_mux.git
 	branch = foxy-devel
 [submodule "teleop_tools"]
 	path = teleop_tools
-	url = https://github.com/f1tenth/teleop_tools.git
+	url = git@github.com:NVIDIA-ISAAC-ROS/teleop_tools.git
 	branch = foxy-devel
