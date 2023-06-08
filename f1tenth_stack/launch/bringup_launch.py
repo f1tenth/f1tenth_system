@@ -72,9 +72,9 @@ def generate_launch_description():
     ld = LaunchDescription([joy_la, vesc_la, sensors_la, mux_la])
 
     joy_node = Node(
-        package='joy',
-        executable='joy_node',
-        name='joy',
+        package='joy_linux',
+        executable='joy_linux_node',
+        name='joy_linux_node',
         parameters=[LaunchConfiguration('joy_config')]
     )
     joy_teleop_node = Node(
@@ -107,12 +107,12 @@ def generate_launch_description():
         name='throttle_interpolator',
         parameters=[LaunchConfiguration('vesc_config')]
     )
-    urg_node = Node(
-        package='urg_node',
-        executable='urg_node_driver',
-        name='urg_node',
-        parameters=[LaunchConfiguration('sensors_config')]
-    )
+    # urg_node = Node(
+    #     package='urg_node',
+    #     executable='urg_node_driver',
+    #     name='urg_node',
+    #     parameters=[LaunchConfiguration('sensors_config')]
+    # )
     ackermann_mux_node = Node(
         package='ackermann_mux',
         executable='ackermann_mux',
@@ -131,11 +131,11 @@ def generate_launch_description():
     ld.add_action(joy_node)
     ld.add_action(joy_teleop_node)
     ld.add_action(ackermann_to_vesc_node)
-    ld.add_action(vesc_to_odom_node)
+    # ld.add_action(vesc_to_odom_node)
     ld.add_action(vesc_driver_node)
     # ld.add_action(throttle_interpolator_node)
-    ld.add_action(urg_node)
-    ld.add_action(ackermann_mux_node)
-    ld.add_action(static_tf_node)
+    # ld.add_action(urg_node)
+    # ld.add_action(ackermann_mux_node)
+    # ld.add_action(static_tf_node)
 
     return ld

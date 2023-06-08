@@ -9,7 +9,7 @@
     steering_angle_to_servo_gain: -1.2135
     steering_angle_to_servo_offset: 0.5304
 
-    port: /dev/sensors/vesc
+    port: /dev/ttyACM0
     duty_cycle_min: 0.0
     duty_cycle_max: 0.0
     current_min: 0.0
