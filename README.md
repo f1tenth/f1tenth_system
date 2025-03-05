@@ -1,4 +1,23 @@
-# f1tenth_system
+# How to run car (capstone instructions):
+1. create local hotspot: on laptop go to Settings/Wifi then click the three dots in the upper right hand corner and click 'Turn on wifi hotspot'
+2. plug in and connect jetson to the monitor and join the hotspot (f1net). run the command line 'hostname -I' on the jetson to find the new IP address. 
+3. (optional) to access code on the jetson without a monitor: ssh into the jetson using VScode on the laptop. on VScode press f1, then click 'SSH: Connect to host', type in f1jetson@my-jetson or f1jetson@ip_address (e.g. f1jetson@10.42.0.153)
+4. ssh into jetson on the laptop in command window (ssh f1jetson@my-jetson). note: the source /opt/ros/foxy/setup.bash and source ~/f1tenth_ws/install/setup.bash are added to the .bashrc file so no need to run those commnads.
+5. To launch the system, on jetson terminal: ros2 launch f1tenth_stack bringup_launch.py
+6. on laptop terminal: ros2 run joy joy_node.
+  a. to move car: hold lb (top left button, the 'dead man' switch) at all times. use the left stick to go forwards/backwards and the right stick to steer left/right. its clunky. 
+8. to launch rviz: on laptop terminal rune: rviz2.
+  a.  to add LiDAR point cloud: click add (bottom left corner), then click LaserScan. Expand LaserScan. In the topic box write /scan. under globaloptions/fixed frame change it laser.  its useful to increase the size of to 0.03 (under LaserScan/Size (m)).
+9. to run SLAM:
+   a. on laptop terminal run: runslam (this is an alias/short cut for a longer command line, view bashrc file to see the full command line e.g. ros2 launch slam_toolbox online_async_launch.py params_file...)
+   b. on Rviz: unclick LaserScan. Add Map (botton left corner), under topic select /map. under fixed frame click map. it looks slightly nice if you click the Type drop down menu under Views (right panel), then click TopDownOrtho.
+   c. to save map: on laptop terminal: ros2 run nav2
+   
+
+
+
+
+# From original source: f1tenth_system
 
 Drivers onboard f1tenth race cars. This branch is under development for migration to ROS2. See the [documentation of F1TENTH](https://f1tenth.readthedocs.io/en/foxy_test/getting_started/firmware/index.html) on how to get started.
 
