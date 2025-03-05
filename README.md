@@ -1,4 +1,4 @@
-# How to run car (capstone instructions):
+![image](https://github.com/user-attachments/assets/df4ae9c0-bf45-48c3-923c-35cd488ebeab)# How to run car (capstone instructions):
 1. create local hotspot: on laptop go to Settings/Wifi then click the three dots in the upper right hand corner and click 'Turn on wifi hotspot'
 2. plug in and connect jetson to the monitor and join the hotspot (f1net). run the command line 'hostname -I' on the jetson to find the new IP address. 
 3. (optional) to access code on the jetson without a monitor: ssh into the jetson using VScode on the laptop. on VScode press f1, then click 'SSH: Connect to host', type in f1jetson@my-jetson or f1jetson@ip_address (e.g. f1jetson@10.42.0.153)
@@ -13,10 +13,15 @@
    b. on Rviz: unclick LaserScan. Add Map (botton left corner), under topic select /map. under fixed frame click map. it looks slightly nice if you click the Type drop down menu under Views (right panel), then click TopDownOrtho.
    c. to save map: on laptop terminal: ros2 launch nav2_map_server map_saver_server.launch.py,
    then run: ros2 run nav2_map_server map_saver_cli -f /home/capstone/f1host_ws/src/f1tenth_stack/map/_map_name_
-   d. to clean up map: click/look up GNU Image Manipulation Program, then find the map in the workspace, right click the paintbrush to select pencil (for hard edges), and color picker to select grey or black colours. 
+   d. to clean up map: click/look up GNU Image Manipulation Program, then find the map in the workspace, right click the paintbrush to select pencil (for hard edges), and color picker to select grey or black colours.
+
    
+   
+ros2 run nav2_map_server --ros-args -p yaml_filename:=test303.yaml -p use_sim_time:=false
+ros2 run nav2_util lifecycle_bringup map_server
 
-
+ros2 run nav2_amcl amcl --ros-args -p base_frame_id:=base_link use_sim_time:=false
+ros2 run nav2_util lifecycle_bringup amcl
 
 
 # From original source: f1tenth_system
