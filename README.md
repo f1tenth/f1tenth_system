@@ -11,7 +11,9 @@
 9. to run SLAM:
    a. on laptop terminal run: runslam (this is an alias/short cut for a longer command line, view bashrc file to see the full command line e.g. ros2 launch slam_toolbox online_async_launch.py params_file...)
    b. on Rviz: unclick LaserScan. Add Map (botton left corner), under topic select /map. under fixed frame click map. it looks slightly nice if you click the Type drop down menu under Views (right panel), then click TopDownOrtho.
-   c. to save map: on laptop terminal: ros2 run nav2
+   c. to save map: on laptop terminal: ros2 launch nav2_map_server map_saver_server.launch.py,
+   then run: ros2 run nav2_map_server map_saver_cli -f /home/capstone/f1host_ws/src/f1tenth_stack/map/_map_name_
+   d. to clean up map: click/look up GNU Image Manipulation Program, then find the map in the workspace, right click the paintbrush to select pencil (for hard edges), and color picker to select grey or black colours. 
    
 
 
