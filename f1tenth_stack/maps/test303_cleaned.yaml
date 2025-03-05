@@ -1,4 +1,4 @@
-image: /home/capstone/f1host_ws/src/f1tenth_system/f1tenth_stack/maps/test303.pgm
+image: /home/capstone/f1host_ws/src/f1tenth_system/f1tenth_stack/maps/test303_cleaned.pgm
 mode: trinary
 resolution: 0.05
 origin: [-4.49, -5.32, 0]
