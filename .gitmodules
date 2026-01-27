@@ -1,12 +1,12 @@
 [submodule "vesc"]
 	path = vesc
-	url = https://github.com/f1tenth/vesc.git
-	branch = foxy
+	url = https://github.com/Weber-AGV/vesc.git
+	branch = humble
 [submodule "ackermann_mux"]
 	path = ackermann_mux
-	url = https://github.com/f1tenth/ackermann_mux.git
+	url = https://github.com/Weber-AGV/ackermann_mux.git
 	branch = foxy-devel
 [submodule "teleop_tools"]
 	path = teleop_tools
-	url = https://github.com/f1tenth/teleop_tools.git
-	branch = foxy-devel
+	url = https://github.com/Weber-AGV/teleop_tools
+	branch = humble-devel
