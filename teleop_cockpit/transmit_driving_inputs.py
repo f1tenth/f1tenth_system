@@ -1,76 +1,101 @@
-import zenoh
-import time
-from dataclasses import dataclass
-from pycdr2 import IdlStruct, float32, int32, uint32, sequence
-import pygame
 
-# --- 1. Define the ROS 2 Message Structures ---
-# These classes tell Python how to pack data into the binary format (CDR)
-# that the Jetson's ROS node expects.
+# import zenoh
+# import time
+# import pygame
+# from dataclasses import dataclass
+# # 1. FIXED: We need these specific types for ROS 2 serialization
+# from pycdr2 import IdlStruct, Sequence
 
-@dataclass
-class Time(IdlStruct):
-    sec: int32
-    nanosec: uint32
+# # --- 2. Define the ROS 2 Message Structures ---
+# @dataclass
+# class Time(IdlStruct):
+#     sec: int
+#     nanosec: int
 
-@dataclass
-class Header(IdlStruct):
-    stamp: Time
-    frame_id: str
+# @dataclass
+# class Header(IdlStruct):
+#     stamp: Time
+#     frame_id: str
 
-@dataclass
-class Joy(IdlStruct):
-    header: Header
-    axes: sequence[float32]
-    buttons: sequence[int32]
+# @dataclass
+# class Joy(IdlStruct):
+#     header: Header
+#     axes: Sequence[float]    # FIXED: Must be sequence[float32]
+#     buttons: Sequence[int]   # FIXED: Must be sequence[int32] (Integers!)
 
-# --- 2. Setup Zenoh ---
-session = zenoh.open()
-# The topic key. 'rt' stands for 'ros topic'.
-# Ensure this matches the topic your F1Tenth stack listens to.
-key_expr = 'rt/joy' 
+# # --- 3. Setup Zenoh (FIXED CONNECTION) ---
+# conf = zenoh.Config()
 
-print(f"Publishing to: {key_expr}")
+# # FIXED: This line opens the "door" so the Jetson can connect
+# conf.insert_json5("listen/endpoints", '["tcp/0.0.0.0:7447"]')
 
-# --- 3. Main Loop ---
-def get_time_now():
-    now = time.time()
-    sec = int(now)
-    nanosec = int((now - sec) * 1_000_000_000)
-    return Time(sec=sec, nanosec=nanosec)
+# print("Opening Zenoh Session (Listening for connections)...")
+# session = zenoh.open(conf)
 
-try:
-    pygame.init()
-    pygame.joystick.init()
-    joystick = pygame.joystick.Joystick(0)
-    joystick.init()
-    joystick_name = joystick.get_name()
-    joystick_num_axes = joystick.get_numaxes()
-    print(f"Detected joystick: {joystick_name} with {joystick_num_axes} axes")
+# key_expr = 'rt/joy' 
+
+# # --- 4. Main Loop ---
+# def get_time_now():
+#     now = time.time()
+#     sec = int(now)
+#     nanosec = int((now - sec) * 1_000_000_000)
+#     return Time(sec=sec, nanosec=nanosec)
+
+# try:
+#     pygame.init()
+#     pygame.joystick.init()
     
-    while True:
-        # Replace this with your actual wheel reading function
-        # TODO hannah work from here to figure out which wheel inputs are which (steering vs throttle vs brake etc)
-        pygame.event.pump()
-        jsInputs = [float(joystick.get_axis(i)) for i in range(joystick_num_axes)] 
-        # Hannah also don't forget to scale/normalize these inputs as needed since joystick axes typically range from -1 to 1
-        steering_normalized = jsInputs[2]  # TODO Example axis index for steering in reality you need to normalize it
-        throttle_normalized = jsInputs[1]  # TODO Example axis index for throttle in reality you need to normalize it
-
-        # Create the Stamped message with Header
-        joy_msg = Joy(
-            header=Header(frame_id="joy"),
-            axes=[0.0, throttle_normalized, steering_normalized, 0.0],  # axes[1]=throttle, axes[2]=steering
-            #buttons=[0, 0, 0, 0, 1, 0, 0]  # button[4]=deadman (if needed)
-        )
-
-        # Serialize to binary (CDR) and send
-        # This creates the byte array that ROS 2 understands
-        payload = joy_msg.serialize()
+#     # Check if joystick is plugged in before crashing
+#     if pygame.joystick.get_count() == 0:
+#         print("No joystick detected! Plug it in.")
+#         exit(1)
         
-        session.put(key_expr, payload)
+#     joystick = pygame.joystick.Joystick(0)
+#     joystick.init()
+#     print(f"Detected joystick: {joystick.get_name()}")
+    
+#     while True:
+#         pygame.event.pump()
         
-        time.sleep(0.05) # 20Hz publish rate
+#         # Read Axes
+#         steer = float(joystick.get_axis(0))
+#         # Normalize Gas/Brake from [-1, 1] to [0, 1] if needed, or keep raw
+#         # Note: Your math: (1.0 - axis) / 2.0 converts 1.0(pressed) -> 0.0, -1.0(released) -> 1.0?
+#         # Verify this math matches what your robot expects.
+#         gas_raw = joystick.get_axis(2)
+#         brake_raw = joystick.get_axis(3)
+        
+#         gas = (1.0 - gas_raw) / 2.0
+#         brake = (1.0 - brake_raw) / 2.0
 
-except KeyboardInterrupt:
-    session.close()
+#         # Construct the Axes list (Order matters!)
+#         # Ensure 'steer', 'gas', etc are wrapped in float32() implies precision
+#         current_axes = [
+#             float(steer), 
+#             float(gas), 
+#             float(brake), 
+#             float(0.0)
+#         ]
+
+#         # Construct Buttons (Must be integers)
+#         # We use a list comprehension to force them to int32
+#         # Example: Just sending 10 zeros for now
+#         current_buttons = [int(0) for _ in range(10)]
+
+#         joy_msg = Joy(
+#             header=Header(stamp=get_time_now(), frame_id="joy"),
+#             axes=current_axes,
+#             buttons=current_buttons
+#         )
+
+#         # Serialize
+#         payload = joy_msg.serialize()
+#         session.put(key_expr, payload)
+
+#         print(f"Steer: {steer:.2f} | Gas: {gas:.2f} | Brake: {brake:.2f}", end="\r")
+#         time.sleep(0.05) # 20Hz
+
+# except KeyboardInterrupt:
+#     print("\nClosing session...")
+#     session.close()
+
