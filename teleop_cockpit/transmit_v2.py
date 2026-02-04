@@ -33,7 +33,7 @@ def get_time_now():
     nanosec = int((now - sec) * 1_000_000_000)
     return Time(sec=sec, nanosec=nanosec)
 
-# --- 3. Main Loop ---
+# --- 3. Main Loop ----
 try:
     pygame.init()
     pygame.joystick.init()
