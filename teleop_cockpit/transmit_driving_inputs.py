@@ -73,20 +73,29 @@ try:
         pygame.event.pump()
         
         # # For steering wheel
-        # raw_steer = joystick.get_axis(0)
-        # raw_gas = joystick.get_axis(2)
-        # # F1tenth doesn't expect a brake value
-        # # raw_brake = joystick.get_axis(3)
+        raw_steer = joystick.get_axis(0)
+        raw_gas = joystick.get_axis(2)
+        raw_reverse = joystick.get_axis(3)
 
         # For XBOX controller (uncomment if needed)
-        raw_steer = joystick.get_axis(0)
-        raw_gas = joystick.get_axis(1)
+        # raw_steer = joystick.get_axis(0)
+        # raw_gas = joystick.get_axis(1)
+        # raw_steer = -raw_steer if abs(raw_steer) > 0.01 else 0.0  # Deadzone for steering
+        # raw_gas = -raw_gas if abs(raw_gas/4) > 0.01 else 0.0  # Invert because up is -1, and apply deadzone
+
         # raw_brake = joystick.get_axis(5)
 
-        # Normalize math
-        steer = float(raw_steer)
-        gas = (1.0 - raw_gas) / 2.0
-        # brake = (1.0 - raw_brake) / 2.0
+        # Normalize math for steering wheel
+        steer = float(-raw_steer)
+        gas = (1.0 - raw_gas) / 8.0
+        reverse = (1.0 - raw_reverse) / 8.0
+        if gas < 0.02 and reverse > 0.02:
+            gas = -reverse  # Use negative gas to indicate reverse
+
+
+        # Normalize math for controller
+        # steer = float(raw_steer)
+        # gas = float(raw_gas)
 
         # Build message using the manual byte packer
         payload = create_manual_joy_message(steer, gas)
@@ -97,7 +106,7 @@ try:
             session.put(key, payload, encoding=zenoh.Encoding("application/cdr"))
 
         # print(f"Steer: {steer:.2f} | Gas: {gas:.2f} | Brake: {brake:.2f}    ", end="\r")
-        print(f"Steer: {steer:.2f} | Gas: {gas:.2f}     ", end="\r")
+        print(f"Steer: {steer:.2f} | Gas: {gas:.2f} | Payload: {len(payload)} bytes", end="\r", flush=True)
 
         time.sleep(0.05) 
 

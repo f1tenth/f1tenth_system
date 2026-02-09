@@ -19,6 +19,11 @@ try:
             # Right Stick Y-axis: Axis 3 (Note: Up is -1, Down is 1)
             # Left Trigger: Axis 4 (Begins at -1, ends at 1 when fully pressed)
             # Right Trigger: Axis 5 (Begins at -1, ends at 1 when fully pressed)
+        # For steering wheel (Logitech G923):
+            # Steering: Axis 0
+            # Clutch: Axis 1
+            # Gas: Axis 2
+            # Brake: Axis 3
         
         output = " | ".join([f"Axis {i}: {axis:.2f}" for i, axis in enumerate(jsInputs)])
         
