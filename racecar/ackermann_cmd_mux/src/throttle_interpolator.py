@@ -47,7 +47,7 @@ class InterpolateThrottle:
         rospy.Timer(rospy.Duration(1.0/self.servo_smoother_rate), self._publish_servo_command)
 
         self.max_delta_rpm = abs(self.speed_to_erpm_gain * self.max_acceleration / self.throttle_smoother_rate)
-        rospy.Timer(rospy.Duration(1.0/self.max_delta_rpm), self._publish_throttle_command)
+        rospy.Timer(rospy.Duration(1.0/self.throttle_smoother_rate), self._publish_throttle_command)
         
         # run the node
         self._run()
