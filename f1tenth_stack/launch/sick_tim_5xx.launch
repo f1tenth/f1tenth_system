@@ -19,7 +19,7 @@
 <!-- Using node option required="true" will close roslaunch after node exits -->
 
 <launch>
-    <arg name="hostname" default="169.254.125.118"/>
+    <arg name="hostname" default="X.X.X.X"/>
     <arg name="cloud_topic" default="cloud"/>
     <arg name="laserscan_topic" default="scan"/>
     <arg name="frame_id" default="laser"/>
@@ -231,4 +231,3 @@
         355 6.195918845
         360 6.283185307
         -->
-
