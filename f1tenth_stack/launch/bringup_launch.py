@@ -60,6 +60,7 @@ def generate_launch_description():
         'vesc_config',
         default_value=vesc_config,
         description='Descriptions for vesc configs')
+    # Will need to edit or remove sensors config for different sensor setups(eg. Camera)
     sensors_la = DeclareLaunchArgument(
         'sensors_config',
         default_value=sensors_config,
