@@ -1,0 +1,2 @@
+eclipse-zenoh==1.7.2
+pygame==2.6.1

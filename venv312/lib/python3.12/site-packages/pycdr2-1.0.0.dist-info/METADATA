@@ -1,0 +1,27 @@
+Metadata-Version: 2.1
+Name: pycdr2
+Version: 1.0.0
+Summary: The IDL part of the CycloneDDS package as standalone version, to support packages that need CDR (de)serialisation without the Cyclone DDS API.
+License: BSD-3-Clause
+Author: Thijs Miedema
+Author-email: opensource@tmiedema.com
+Requires-Python: >=3.7
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Typing :: Typed
+Requires-Dist: typing-extensions (>=4.4.0) ; python_version < "3.9"
+Description-Content-Type: text/markdown
+
+# PyCDR2
+
+PyCDR2 is the standalone version of `cyclonedds.idl`. The documentation of [cyclonedds.io/docs/cyclonedds-python/latest/idl.html](https://cyclonedds.io/docs/cyclonedds-python/latest/idl.html) still applies, you just have to replace `cyclonedds.idl` with `pycdr2`.
+

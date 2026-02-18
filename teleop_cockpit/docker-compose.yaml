@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  cockpit:
+    # Build the image from the current directory
+    build: .
+    image: f1tenth_teleop
+    container_name: f1tenth_cockpit
+
+    # Maps to "-it" (Interactive mode so you see print outputs)
+    stdin_open: true
+    tty: true
+    
+    # Keeps the network mode standard (Bridge)
+    # The Jetson will connect to the cockpit's IP address, not the container's.
+    network_mode: host
+   
+    ports:
+      - "7447:7447"
+
+    # Maps to "--device /dev/input"
+    # CRITICAL: This section gives the container access to USB controllers.
+    # NOTE: This works on Linux (Ubuntu/Raspberry Pi). 
+    # If running on Windows, you must work natively with a venv
+    devices:
+      - "/dev/input:/dev/input"

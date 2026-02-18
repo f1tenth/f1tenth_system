@@ -36,3 +36,5 @@
 
 # py
 *.pyc
+# virtual environment
+.f1tenthvenv/
