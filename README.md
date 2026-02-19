@@ -27,9 +27,7 @@ sudo apt-get install ros-humble-sick-scan-xd
 
 `<f1tenth_stack>/launch/sick_tim_5xx.launch`
 
-Bring up with `ros2 launch f1tenth_stack sick_bringup_launch.py`. This file is an updated version of the original `sick_tim_5xx.launch` file that changes the "frame_id" to "laser" and "tf_base_frame_id" to "base_link", which is compatible with the slam_toolbox and particle filter. You will still need to set the IP address of the lidar in the launch file.
-
-Bring up with `ros2 launch f1tenth_stack sick_bringup_launch.py`
+This file is an updated version of the original `sick_tim_5xx.launch` file that changes the "frame_id" to "laser" and "tf_base_frame_id" to "base_link", which is compatible with the slam_toolbox and particle filter. You will still need to set the IP address of the lidar in the launch file.
 
 See the [documentation of F1TENTH](https://f1tenth.readthedocs.io/en/foxy_test/getting_started/firmware/index.html) on how to get started.
 
@@ -46,6 +44,31 @@ nmap -sn
 ```
 
 If you have a SICK lidar connected to the network, you will see the IP address of the lidar in the output.
+
+### Configure Ethernet (after you know the LiDAR IP)
+
+Follow the [Hokuyo 10LX Ethernet connection setup](https://f1tenth.readthedocs.io/en/foxy_test/getting_started/firmware/firmware_hokuyo10.html#hokuyo-10lx-ethernet-connection-setup). The same networking steps apply to the SICK LiDAR. Use the LiDAR IP you discovered (it may not be `192.168.0.10`).
+
+Configure the Jetson `eth0` connection in the Linux GUI:
+
+1. Open **Network Configuration** and edit the `eth0` connection (or create a new one named `SICK`).
+2. In the **IPv4** tab, set **Manual** and add:
+   - IP address: a free address on the same subnet as the LiDAR (example: LiDAR `192.168.0.10` -> Jetson `192.168.0.15`)
+   - Subnet mask: `255.255.255.0` (or match the LiDAR subnet)
+   - Gateway: the LiDAR IP (example: `192.168.0.10`)
+3. Save the connection and select it.
+4. Plug in the LiDAR and verify connectivity:
+
+```bash
+ping <lidar_ip>
+```
+
+### Update launch files
+
+1. Open `f1tenth_stack/launch/sick_tim_5xx.launch` and set `<arg name="hostname" default="..."/>` to your LiDAR IP.
+2. Open `f1tenth_stack/launch/sick_bringup_launch.py` and confirm `arguments=[...]` points to your local `sick_tim_5xx.launch` file (update the path if needed).
+
+Bring up with `ros2 launch f1tenth_stack sick_bringup_launch.py`.
 
 ## Topics
 
@@ -66,7 +89,8 @@ If you have a SICK lidar connected to the network, you will see the IP address o
 4. teleop_tools  [https://index.ros.org/p/teleop_tools/#humble](https://index.ros.org/p/teleop_tools/#humble). This is the package for teleop with joysticks in ROS 2.
 5. vesc [GitHub - f1tenth/vesc at ros2](https://github.com/f1tenth/vesc/tree/ros2). This is the driver for VESCs in ROS 2.
 6. ackermann_mux [GitHub - f1tenth/ackermann_mux: Twist multiplexer](https://github.com/f1tenth/ackermann_mux). This is a package for multiplexing ackermann messages in ROS 2.
-<!-- 7. rosbridge_suite [https://index.ros.org/p/rosbridge_suite/#humble-overview](https://index.ros.org/p/rosbridge_suite/#humble-overview) This is a package that allows for websocket connection in ROS 2. -->
+7. sick_scan_xd [https://index.ros.org/p/sick_scan_xd/#humble](https://index.ros.org/p/sick_scan_xd/#humble). This is the driver for SICK LiDARs in ROS 2.
+<!-- 8. rosbridge_suite [https://index.ros.org/p/rosbridge_suite/#humble-overview](https://index.ros.org/p/rosbridge_suite/#humble-overview) This is a package that allows for websocket connection in ROS 2. -->
 
 ## Package in this repo
 

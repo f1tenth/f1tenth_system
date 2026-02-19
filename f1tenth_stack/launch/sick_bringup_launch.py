@@ -51,6 +51,11 @@ def generate_launch_description():
         'config',
         'mux.yaml'
     )
+    sick_launch_file = os.path.join(
+        get_package_share_directory('f1tenth_stack'),
+        'launch',
+        'sick_tim_5xx.launch'
+    )
 
     joy_la = DeclareLaunchArgument(
         'joy_config',
@@ -111,7 +116,7 @@ def generate_launch_description():
         package='sick_scan_xd',
         executable='sick_generic_caller',
         name='sick_node',
-        arguments=["/opt/ros/humble/share/sick_scan_xd/launch/sick_tim_5xx.launch"] # Be sure to update this to point to the launch folder's update .launch file
+        arguments=[sick_launch_file] # Update if your launch file lives elsewhere
     )
     ackermann_mux_node = Node(
         package='ackermann_mux',
