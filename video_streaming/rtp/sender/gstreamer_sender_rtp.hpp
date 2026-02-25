@@ -39,6 +39,8 @@ struct VideoOutputTrackInfo {
   std::string media_type;
   VideoCaps caps;
   VideoCodec codec;
+  std::string destination_host = "127.0.0.1";
+  int destination_port = 5000;
 };
 
 /**

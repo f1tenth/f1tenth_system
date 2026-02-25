@@ -17,12 +17,13 @@ STARTUP_GRACE_PERIOD_SEC = 3
 STATUS_CHECK_INTERVAL_SEC = 10
 UI_UPDATE_INTERVAL_SEC = 1
 FRAME_LOG_INTERVAL = 150
+DEFAULT_PAYLOAD_TYPE = 102
 
 
 class GStreamerReceiver:
     """RTP H.264 receiver with real-time GTK display and stream monitoring."""
     
-    def __init__(self, port: int, use_hw_decode: bool = True):
+    def __init__(self, port: int, use_hw_decode: bool = True, payload_type: int = DEFAULT_PAYLOAD_TYPE):
         Gst.init(None)
         Gtk.init(None)
         
@@ -30,13 +31,13 @@ class GStreamerReceiver:
         self.frame_count = 0
         self.startup_time = time.time()
         
-        self.pipeline = self._build_pipeline(port, use_hw_decode)
+        self.pipeline = self._build_pipeline(port, use_hw_decode, payload_type)
         self.window = self._create_window()
         
         self.pipeline.set_state(Gst.State.PLAYING)
-        self._print_startup_info(port, use_hw_decode)
+        self._print_startup_info(port, use_hw_decode, payload_type)
     
-    def _build_pipeline(self, port: int, use_hw_decode: bool) -> Gst.Pipeline:
+    def _build_pipeline(self, port: int, use_hw_decode: bool, payload_type: int) -> Gst.Pipeline:
         """Build GStreamer pipeline with specified decoder."""
         if use_hw_decode:
             decoder = "nvh264dec"
@@ -47,7 +48,7 @@ class GStreamerReceiver:
         
         pipeline_desc = (
             f"udpsrc port={port} buffer-size=212992 "
-            f"caps=\"application/x-rtp, media=video, encoding-name=H264, payload=96\" ! "
+            f"caps=\"application/x-rtp, media=video, encoding-name=H264, payload={payload_type}\" ! "
             f"rtpjitterbuffer latency=0 drop-on-latency=true do-retransmission=false ! "
             f"rtph264depay ! "
             f"h264parse config-interval=-1 ! "
@@ -153,10 +154,11 @@ class GStreamerReceiver:
         self.stop()
         return False
     
-    def _print_startup_info(self, port: int, use_hw_decode: bool):
+    def _print_startup_info(self, port: int, use_hw_decode: bool, payload_type: int):
         """Print startup information."""
         decoder = "nvh264dec (hardware)" if use_hw_decode else "avdec_h264 (software)"
         print(f"GStreamer receiver listening on port {port}")
+        print(f"Expecting RTP payload type: {payload_type}")
         print(f"Using decoder: {decoder}")
         print("Press Ctrl+C or close window to quit")
     
@@ -168,8 +170,9 @@ class GStreamerReceiver:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="RTP H.264 receiver and viewer for ZED stream")
+    parser = argparse.ArgumentParser(description="RTP H.264 receiver and viewer for F1Tenth camera")
     parser.add_argument("--port", type=int, default=5000, help="UDP port to listen on")
+    parser.add_argument("--payload-type", type=int, default=DEFAULT_PAYLOAD_TYPE, help="Expected RTP payload type")
     parser.add_argument("--hw", action="store_true", default=True, help="Use hardware H.264 decoder (nvh264dec)")
     parser.add_argument("--sw", action="store_true", help="Force software decoder (avdec_h264)")
     args = parser.parse_args()
@@ -177,8 +180,8 @@ def main():
     # If --sw is specified, override --hw
     use_hw = args.hw and not args.sw
     
-    print("Starting RTP H.264 receiver for ZED camera...")
-    receiver = GStreamerReceiver(args.port, use_hw)
+    print("Starting RTP H.264 receiver for F1Tenth camera...")
+    receiver = GStreamerReceiver(args.port, use_hw, args.payload_type)
     print(f"Listening for RTP stream on port {args.port}")
     
     def signal_handler(sig, frame):
