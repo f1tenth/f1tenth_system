@@ -1,0 +1,54 @@
+services:
+  signaling:
+    build:
+      context: ./receiver
+      dockerfile: Dockerfile
+    entrypoint: ["python3", "/app/signaling_server.py"]
+    command: ["--host", "0.0.0.0", "--port", "8765"]
+    ports:
+      - "8765:8765"
+
+  receiver:
+    build:
+      context: ./receiver
+      dockerfile: Dockerfile
+    depends_on:
+      - signaling
+    environment:
+      GST_DEBUG: "2"
+    command: ["--server-url", "ws://signaling:8765", "--room-id", "f1tenth"]
+
+  receiver_gui_linux:
+    build:
+      context: ./receiver
+      dockerfile: Dockerfile
+    depends_on:
+      - signaling
+    profiles: ["linux-gui"]
+    environment:
+      DISPLAY: ${DISPLAY}
+      GST_DEBUG: "2"
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    command: ["--server-url", "ws://signaling:8765", "--room-id", "f1tenth"]
+
+  receiver_gui_windows:
+    build:
+      context: ./receiver
+      dockerfile: Dockerfile
+    depends_on:
+      - signaling
+    profiles: ["windows-gui"]
+    environment:
+      DISPLAY: host.docker.internal:0.0
+      GST_VIDEO_SINK: ximagesink
+      GST_DEBUG: "2"
+    command: ["--server-url", "ws://signaling:8765", "--room-id", "f1tenth"]
+
+  sender:
+    build:
+      context: ./sender
+      dockerfile: Dockerfile
+    depends_on:
+      - signaling
+    command: ["--server-url", "ws://signaling:8765", "--room-id", "f1tenth", "--source", "videotestsrc"]

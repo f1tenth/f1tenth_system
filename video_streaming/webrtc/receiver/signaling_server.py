@@ -44,9 +44,18 @@ class SignalingServer:
         self.rooms: Dict[str, SignalingRoom] = {}
         self.connections: Dict = {}  # ws -> (room_id, role)
     
-    async def handle_client(self, websocket, path):
-        """Handle incoming WebSocket connection."""
-        client_id = f"{websocket.remote_address[0]}:{websocket.remote_address[1]}"
+    async def handle_client(self, websocket, path=None):
+        """Handle incoming WebSocket connection.
+
+        Compatible with both websockets handler signatures:
+        - old: handle_client(websocket, path)
+        - new: handle_client(websocket)
+        """
+        remote = getattr(websocket, "remote_address", None)
+        if remote and len(remote) >= 2:
+            client_id = f"{remote[0]}:{remote[1]}"
+        else:
+            client_id = "unknown"
         logger.info(f"Client connected: {client_id}")
         
         try:

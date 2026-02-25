@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     pkg-config \
     git \
+    ca-certificates \
     libssl-dev \
     zlib1g-dev \
     nlohmann-json3-dev \
@@ -16,7 +17,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth 1 --branch v11.4.5 https://github.com/machinezone/IXWebSocket.git /tmp/IXWebSocket \
+ARG IXWS_REF=v11.4.5
+
+RUN git clone --depth 1 https://github.com/machinezone/IXWebSocket.git /tmp/IXWebSocket \
+    && cd /tmp/IXWebSocket \
+    && (git fetch --depth 1 origin "refs/tags/${IXWS_REF}:refs/tags/${IXWS_REF}" \
+        && git checkout "${IXWS_REF}" \
+        || echo "Warning: could not checkout ${IXWS_REF}, using default branch") \
     && cmake -S /tmp/IXWebSocket -B /tmp/IXWebSocket/build -DCMAKE_BUILD_TYPE=Release \
     && cmake --build /tmp/IXWebSocket/build -j"$(nproc)" \
     && cmake --install /tmp/IXWebSocket/build \
@@ -41,6 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
     gstreamer1.0-plugins-bad \
+    gstreamer1.0-nice \
     gstreamer1.0-plugins-ugly \
     gstreamer1.0-libav \
     && rm -rf /var/lib/apt/lists/*

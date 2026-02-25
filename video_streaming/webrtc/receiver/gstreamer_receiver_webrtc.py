@@ -1,200 +1,270 @@
 import argparse
+import asyncio
+import logging
+import os
 import signal
 import time
+
 import gi
 
 gi.require_version('Gst', '1.0')
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gst, GLib, Gtk
+gi.require_version('GstWebRTC', '1.0')
+gi.require_version('GstSdp', '1.0')
+from gi.repository import Gst, GstSdp, GstWebRTC
+
+from signaling_client_python import SignalingClient
 
 
-# Configuration constants
-WINDOW_TITLE = "F1Tenth Camera Streamer"
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
-STREAM_TIMEOUT_SEC = 3
-STARTUP_GRACE_PERIOD_SEC = 3
-STATUS_CHECK_INTERVAL_SEC = 10
-UI_UPDATE_INTERVAL_SEC = 1
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
+
+
 FRAME_LOG_INTERVAL = 150
 
 
-class GStreamerReceiver:
-    """RTP H.264 receiver with real-time GTK display and stream monitoring."""
-    
-    def __init__(self, port: int, use_hw_decode: bool = True):
+class WebRTCReceiver:
+    """WebRTC H.264 receiver using webrtcbin + signaling server."""
+
+    def __init__(self, server_url: str, room_id: str, use_hw_decode: bool = True):
         Gst.init(None)
-        Gtk.init(None)
-        
-        self.last_frame_time = None
+
+        self.server_url = server_url
+        self.room_id = room_id
+        self.use_hw_decode = use_hw_decode
+        self.running = True
+
+        self.loop = asyncio.get_running_loop()
+        self.signaling = SignalingClient(room_id)
+        self.signaling.on_connected = self._on_signaling_connected
+        self.signaling.on_disconnected = self._on_signaling_disconnected
+        self.signaling.on_remote_offer = self._on_remote_offer
+        self.signaling.on_remote_ice = self._on_remote_ice
+        self.signaling.on_error = self._on_signaling_error
+
         self.frame_count = 0
-        self.startup_time = time.time()
-        
-        self.pipeline = self._build_pipeline(port, use_hw_decode)
-        self.window = self._create_window()
-        
+        self.last_frame_time = None
+
+        self.pipeline = Gst.Pipeline.new("webrtc-receiver")
+        self.webrtcbin = Gst.ElementFactory.make("webrtcbin", "webrtc")
+        if not self.webrtcbin:
+            raise RuntimeError("Failed to create webrtcbin")
+
+        self.webrtcbin.set_property("stun-server", "stun://stun.l.google.com:19302")
+        self.webrtcbin.connect("on-ice-candidate", self._on_local_ice_candidate)
+        self.webrtcbin.connect("pad-added", self._on_incoming_stream)
+
+        self.pipeline.add(self.webrtcbin)
         self.pipeline.set_state(Gst.State.PLAYING)
-        self._print_startup_info(port, use_hw_decode)
-    
-    def _build_pipeline(self, port: int, use_hw_decode: bool) -> Gst.Pipeline:
-        """Build GStreamer pipeline with specified decoder."""
-        if use_hw_decode:
-            decoder = "nvh264dec"
-            caps_filter = ""
-        else:
-            decoder = "avdec_h264"
-            caps_filter = ""
-        
-        pipeline_desc = (
-            f"udpsrc port={port} buffer-size=212992 "
-            f"caps=\"application/x-rtp, media=video, encoding-name=H264, payload=102\" ! "
-            f"rtpjitterbuffer latency=0 drop-on-latency=true do-retransmission=false ! "
-            f"rtph264depay ! "
-            f"h264parse config-interval=-1 ! "
-            f"{decoder} ! "
-            f"{caps_filter}"
-            f"videoconvert ! "
-            f"gtksink name=sink sync=false force-aspect-ratio=true"
-        )
-        
-        pipeline = Gst.parse_launch(pipeline_desc)
-        
-        bus = pipeline.get_bus()
+
+        bus = self.pipeline.get_bus()
         bus.add_signal_watch()
         bus.connect("message", self._on_bus_message)
-        
-        gtksink = pipeline.get_by_name("sink")
-        sink_pad = gtksink.get_static_pad("sink")
-        sink_pad.add_probe(Gst.PadProbeType.BUFFER, self._on_frame_probe)
-        
-        return pipeline
-    
-    def _create_window(self) -> Gtk.Window:
-        """Create GTK window with video widget and status overlay."""
-        window = Gtk.Window()
-        window.set_title(WINDOW_TITLE)
-        window.set_default_size(WINDOW_WIDTH, WINDOW_HEIGHT)
-        window.connect("delete-event", self._on_window_close)
-        
-        overlay = Gtk.Overlay()
-        
-        gtksink = self.pipeline.get_by_name("sink")
-        video_widget = gtksink.get_property("widget")
-        overlay.add(video_widget)
-        
-        self.status_label = self._create_status_label()
-        overlay.add_overlay(self.status_label)
-        
-        window.add(overlay)
-        window.show_all()
-        
-        GLib.timeout_add_seconds(STATUS_CHECK_INTERVAL_SEC, self._check_stream_status)
-        GLib.timeout_add_seconds(UI_UPDATE_INTERVAL_SEC, self._update_ui_status)
-        
-        return window
-    
-    def _create_status_label(self) -> Gtk.Label:
-        """Create centered status label for stream unavailable message."""
-        label = Gtk.Label()
-        label.set_markup(
-            '<span font="32" weight="bold" foreground="#76B900" background="black">'
-            '  VIDEO STREAM UNAVAILABLE  </span>'
-        )
-        label.set_halign(Gtk.Align.CENTER)
-        label.set_valign(Gtk.Align.CENTER)
-        label.set_no_show_all(True)
-        return label
-    
-    def _is_stream_active(self) -> bool:
-        """Check if stream has received frames recently."""
-        if self.last_frame_time is None:
-            return False
-        return (time.time() - self.last_frame_time) <= STREAM_TIMEOUT_SEC
-    
-    def _on_frame_probe(self, pad, info):
-        """GStreamer pad probe callback on each frame."""
-        self.last_frame_time = time.time()
-        self.frame_count += 1
-        
-        return Gst.PadProbeReturn.OK
-    
-    def _check_stream_status(self):
-        """Periodic logging of stream status."""
-        timestamp = time.strftime('%H:%M:%S')
-        if not self._is_stream_active():
-            print(f"[{timestamp}] No video stream available - waiting for stream on port...")
-        elif self.frame_count % FRAME_LOG_INTERVAL == 0 and self.frame_count > 0:
-            print(f"[{timestamp}] Streaming active - {self.frame_count} frames received")
-        return True
-    
-    def _update_ui_status(self):
-        """Update UI status message visibility."""
-        time_since_startup = time.time() - self.startup_time
-        
-        if self._is_stream_active():
-            self.status_label.hide()
-        elif time_since_startup > STARTUP_GRACE_PERIOD_SEC:
-            self.status_label.show()
-        return True
-    
-    def _on_bus_message(self, bus, message):
-        """Handle GStreamer bus messages."""
+
+        logger.info("WebRTC receiver initialized")
+
+    async def start(self):
+        ok = await self.signaling.connect(self.server_url)
+        if not ok:
+            raise RuntimeError("Failed to connect to signaling server")
+
+    async def run(self):
+        logger.info("Receiver running. Waiting for offer...")
+        try:
+            while self.running:
+                await asyncio.sleep(0.02)
+        finally:
+            await self.shutdown()
+
+    async def shutdown(self):
+        if not self.running:
+            return
+        self.running = False
+        logger.info("Shutting down receiver")
+        await self.signaling.disconnect()
+        self.pipeline.set_state(Gst.State.NULL)
+
+    def _on_bus_message(self, _, message):
         msg_type = message.type
-        if msg_type == Gst.MessageType.EOS:
-            print("End-of-stream")
-            self.stop()
-        elif msg_type == Gst.MessageType.ERROR:
+        if msg_type == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
-            print(f"Error: {err}, {debug}")
-            self.stop()
-    
-    def _on_window_close(self, widget, event):
-        """Handle window close event."""
-        self.stop()
-        return False
-    
-    def _print_startup_info(self, port: int, use_hw_decode: bool):
-        """Print startup information."""
-        decoder = "nvh264dec (hardware)" if use_hw_decode else "avdec_h264 (software)"
-        print(f"GStreamer receiver listening on port {port}")
-        print(f"Using decoder: {decoder}")
-        print("Press Ctrl+C or close window to quit")
-    
-    def stop(self):
-        """Stop pipeline and quit GTK main loop."""
-        if self.pipeline:
-            self.pipeline.set_state(Gst.State.NULL)
-        Gtk.main_quit()
+            logger.error("GStreamer error: %s (%s)", err, debug)
+            self.running = False
+        elif msg_type == Gst.MessageType.EOS:
+            logger.info("GStreamer EOS")
+            self.running = False
+
+    def _on_signaling_connected(self):
+        logger.info("Connected to signaling server (%s), room=%s", self.server_url, self.room_id)
+        logger.info("DISPLAY=%s GST_VIDEO_SINK=%s", os.getenv("DISPLAY", "(unset)"), os.getenv("GST_VIDEO_SINK", "autovideosink"))
+
+    def _on_signaling_disconnected(self):
+        logger.info("Disconnected from signaling server")
+
+    def _on_signaling_error(self, error: str):
+        logger.error("Signaling error: %s", error)
+
+    def _on_local_ice_candidate(self, _webrtcbin, mlineindex, candidate):
+        if not candidate:
+            return
+        asyncio.run_coroutine_threadsafe(
+            self.signaling.send_ice_candidate(int(mlineindex), candidate),
+            self.loop,
+        )
+
+    def _on_remote_offer(self, sdp_text: str):
+        logger.info("Received remote SDP offer (%d bytes)", len(sdp_text))
+
+        video_caps = Gst.Caps.from_string(
+            "application/x-rtp,media=video,encoding-name=H264,payload=102,clock-rate=90000"
+        )
+        self.webrtcbin.emit(
+            "add-transceiver",
+            GstWebRTC.WebRTCRTPTransceiverDirection.RECVONLY,
+            video_caps,
+        )
+
+        res, sdp = GstSdp.SDPMessage.new()
+        if res != GstSdp.SDPResult.OK:
+            logger.error("Failed to create SDP message")
+            return
+
+        parse_res = GstSdp.sdp_message_parse_buffer(bytes(sdp_text.encode("utf-8")), sdp)
+        if parse_res != GstSdp.SDPResult.OK:
+            logger.error("Failed to parse remote SDP offer")
+            return
+
+        offer = GstWebRTC.WebRTCSessionDescription.new(GstWebRTC.WebRTCSDPType.OFFER, sdp)
+        set_remote_promise = Gst.Promise.new()
+        self.webrtcbin.emit("set-remote-description", offer, set_remote_promise)
+        set_remote_promise.interrupt()
+
+        answer_promise = Gst.Promise.new()
+        self.webrtcbin.emit("create-answer", None, answer_promise)
+        answer_promise.wait()
+        reply = answer_promise.get_reply()
+        answer = reply.get_value("answer")
+
+        set_local_promise = Gst.Promise.new()
+        self.webrtcbin.emit("set-local-description", answer, set_local_promise)
+        set_local_promise.interrupt()
+
+        answer_sdp_text = answer.sdp.as_text()
+        asyncio.run_coroutine_threadsafe(
+            self.signaling.send_answer(answer_sdp_text),
+            self.loop,
+        )
+
+        logger.info("Created and sent SDP answer (%d bytes)", len(answer_sdp_text))
+
+    def _on_remote_ice(self, sdp_mline_index: int, candidate: str):
+        self.webrtcbin.emit("add-ice-candidate", int(sdp_mline_index), candidate)
+
+    def _on_incoming_stream(self, _webrtcbin, pad):
+        caps = pad.get_current_caps()
+        if not caps:
+            return
+        name = caps.get_structure(0).get_name()
+        if name != "application/x-rtp":
+            return
+
+        logger.info("Incoming RTP stream pad detected: %s", name)
+
+        queue = Gst.ElementFactory.make("queue", None)
+        depay = Gst.ElementFactory.make("rtph264depay", None)
+        parse = Gst.ElementFactory.make("h264parse", None)
+
+        decoder_name = "nvh264dec" if self.use_hw_decode else "avdec_h264"
+        decoder = Gst.ElementFactory.make(decoder_name, None)
+        if not decoder:
+            decoder = Gst.ElementFactory.make("avdec_h264", None)
+            logger.warning("Falling back to avdec_h264")
+
+        convert = Gst.ElementFactory.make("videoconvert", None)
+        sink_name = os.getenv("GST_VIDEO_SINK", "autovideosink")
+        sink = Gst.ElementFactory.make(sink_name, None)
+        if not sink:
+            logger.warning("Failed to create sink '%s', falling back to autovideosink", sink_name)
+            sink = Gst.ElementFactory.make("autovideosink", None)
+
+        if not all([queue, depay, parse, decoder, convert, sink]):
+            logger.error("Failed to create decode/render elements")
+            return
+
+        sink.set_property("sync", False)
+        logger.info("Using video sink: %s", sink.get_factory().get_name() if sink.get_factory() else "unknown")
+
+        self.pipeline.add(queue)
+        self.pipeline.add(depay)
+        self.pipeline.add(parse)
+        self.pipeline.add(decoder)
+        self.pipeline.add(convert)
+        self.pipeline.add(sink)
+
+        queue.sync_state_with_parent()
+        depay.sync_state_with_parent()
+        parse.sync_state_with_parent()
+        decoder.sync_state_with_parent()
+        convert.sync_state_with_parent()
+        sink.sync_state_with_parent()
+
+        if not Gst.Element.link_many(queue, depay, parse, decoder, convert, sink):
+            logger.error("Failed to link incoming decode chain")
+            return
+
+        queue_sink_pad = queue.get_static_pad("sink")
+        if pad.link(queue_sink_pad) != Gst.PadLinkReturn.OK:
+            logger.error("Failed to link webrtc pad to decode queue")
+            return
+
+        sink_pad = sink.get_static_pad("sink")
+        sink_pad.add_probe(Gst.PadProbeType.BUFFER, self._on_frame_probe)
+        logger.info("Incoming stream linked to decoder and sink")
+
+    def _on_frame_probe(self, _pad, _info):
+        self.frame_count += 1
+        self.last_frame_time = time.time()
+        if self.frame_count % FRAME_LOG_INTERVAL == 0:
+            logger.info("Received %d frames", self.frame_count)
+        return Gst.PadProbeReturn.OK
 
 
-def main():
-    parser = argparse.ArgumentParser(description="RTP H.264 receiver and viewer for ZED stream")
-    parser.add_argument("--port", type=int, default=5000, help="UDP port to listen on")
-    parser.add_argument("--hw", action="store_true", default=True, help="Use hardware H.264 decoder (nvh264dec)")
-    parser.add_argument("--sw", action="store_true", help="Force software decoder (avdec_h264)")
+async def async_main():
+    parser = argparse.ArgumentParser(description="WebRTC H.264 receiver")
+    parser.add_argument("--server-url", default="ws://localhost:8765", help="Signaling server URL")
+    parser.add_argument("--room-id", default="f1tenth", help="Signaling room ID")
+    parser.add_argument("--hw", action="store_true", default=True, help="Use hardware H.264 decoder when available")
+    parser.add_argument("--sw", action="store_true", help="Force software decoder")
     args = parser.parse_args()
-    
-    # If --sw is specified, override --hw
+
     use_hw = args.hw and not args.sw
-    
-    print("Starting RTP H.264 receiver for ZED camera...")
-    receiver = GStreamerReceiver(args.port, use_hw)
-    print(f"Listening for RTP stream on port {args.port}")
-    
-    def signal_handler(sig, frame):
-        print("\nInterrupted by user")
-        receiver.stop()
-    
-    signal.signal(signal.SIGINT, signal_handler)
-    
+    receiver = WebRTCReceiver(args.server_url, args.room_id, use_hw_decode=use_hw)
+
+    stop_event = asyncio.Event()
+
+    def stop_handler(*_):
+        stop_event.set()
+
+    signal.signal(signal.SIGINT, stop_handler)
     try:
-        Gtk.main()
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        receiver.stop()
-        print("Cleanup complete")
+        signal.signal(signal.SIGTERM, stop_handler)
+    except Exception:
+        pass
+
+    await receiver.start()
+
+    runner = asyncio.create_task(receiver.run())
+    stopper = asyncio.create_task(stop_event.wait())
+
+    done, pending = await asyncio.wait({runner, stopper}, return_when=asyncio.FIRST_COMPLETED)
+    for task in pending:
+        task.cancel()
+
+    if stop_event.is_set():
+        await receiver.shutdown()
+
+    if runner in done:
+        runner.result()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(async_main())
