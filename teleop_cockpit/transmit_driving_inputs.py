@@ -77,13 +77,12 @@ try:
         raw_gas = joystick.get_axis(2)
         raw_reverse = joystick.get_axis(3)
 
-        # For XBOX controller (uncomment if needed)
+        # # For XBOX controller (uncomment if needed)
         # raw_steer = joystick.get_axis(0)
         # raw_gas = joystick.get_axis(1)
-        # raw_steer = -raw_steer if abs(raw_steer) > 0.01 else 0.0  # Deadzone for steering
-        # raw_gas = -raw_gas if abs(raw_gas/4) > 0.01 else 0.0  # Invert because up is -1, and apply deadzone
+        # raw_steer = -raw_steer if abs(raw_steer) > 0.03 else 0.0  # Deadzone for steering
+        # raw_gas = -raw_gas/4 if abs(raw_gas) > 0.03 else 0.0  # Invert because up is -1, and apply deadzone
 
-        # raw_brake = joystick.get_axis(5)
 
         # Normalize math for steering wheel
         steer = float(-raw_steer)
@@ -94,8 +93,8 @@ try:
 
 
         # Normalize math for controller
-        # steer = float(raw_steer)
-        # gas = float(raw_gas)
+        steer = float(raw_steer)
+        gas = float(raw_gas)
 
         # Build message using the manual byte packer
         payload = create_manual_joy_message(steer, gas)

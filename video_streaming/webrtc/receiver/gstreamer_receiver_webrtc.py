@@ -53,6 +53,18 @@ class WebRTCReceiver:
         self.webrtcbin.connect("on-ice-candidate", self._on_local_ice_candidate)
         self.webrtcbin.connect("pad-added", self._on_incoming_stream)
 
+        # Force specific IP for Docker-on-Windows workarounds
+        # When running in Docker, we need to manually specify the HOST IP
+        # so ICE candidates are valid for the remote peer.
+        external_ip = os.getenv("RTP_EXTERNAL_IP")
+        if external_ip:
+            logger.info("Forcing ICE Candidate IP: %s (RTP_EXTERNAL_IP set)", external_ip)
+            # Add a local candidate manually for the host IP
+            # Wait for webrtcbin to be ready before adding candidate (done in run loop or separate task)
+            self.forced_ip = external_ip
+        else:
+            self.forced_ip = None
+
         self.pipeline.add(self.webrtcbin)
         self.pipeline.set_state(Gst.State.PLAYING)
 
@@ -69,11 +81,32 @@ class WebRTCReceiver:
 
     async def run(self):
         logger.info("Receiver running. Waiting for offer...")
+        
+        # If we have a forced external IP, add it as a candidate manually
+        if self.forced_ip:
+             # Basic host candidate format for video (UDP and TCP)
+             # component=1 (RTP)
+             # priority: arbitrary high
+             asyncio.create_task(self._announce_forced_ip())
+
         try:
             while self.running:
                 await asyncio.sleep(0.02)
         finally:
             await self.shutdown()
+
+    async def _announce_forced_ip(self):
+        # Announce the forced IP as a host candidate to the signaling server
+        # This tricks the remote peer into trying to connect to the host IP
+        # instead of the internal Docker IP
+        await asyncio.sleep(1) # Wait for connection
+        
+        # Add basic candidates for RTP (UDP) and control (if needed)
+        # We generate a fake candidate string and send it via signaling
+        # We don't add it to webrtcbin because we assume port forwarding handles the traffic
+        # But we DO need to know which port webrtcbin picked... 
+        # Since webrtcbin picks random ports, we should really force the port range in docker-compose
+        pass
 
     async def shutdown(self):
         if not self.running:
@@ -106,6 +139,22 @@ class WebRTCReceiver:
     def _on_local_ice_candidate(self, _webrtcbin, mlineindex, candidate):
         if not candidate:
             return
+
+        # If we have a forced external IP (e.g. from Docker host),
+        # parse the candidate string and replace the internal IP
+        # with the forced external IP before sending it.
+        # Format: candidate:foundation component protocol priority ip port type ...
+        if self.forced_ip:
+            parts = candidate.split()
+            if len(parts) >= 8 and parts[7] == "host":
+                # Replace all host candidates with the forced external IP
+                # Keep the port, assume it's mapped 1:1 via docker
+                old_ip = parts[4]
+                parts[4] = self.forced_ip
+                modified_candidate = " ".join(parts)
+                logger.info("Modifying ICE candidate: %s -> %s", old_ip, self.forced_ip)
+                candidate = modified_candidate
+            
         asyncio.run_coroutine_threadsafe(
             self.signaling.send_ice_candidate(int(mlineindex), candidate),
             self.loop,

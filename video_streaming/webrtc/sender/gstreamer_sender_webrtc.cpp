@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <utility>
+#include <cstdlib>
+#include <sstream>
+#include <vector>
 
 static GstElement* create_video_convert(const gchar* name) {
   GstElement* video_convert = gst_element_factory_make("nvvidconv", name);
@@ -48,9 +51,37 @@ VideoOutputPipeline::VideoOutputPipeline(VideoOutputTrackInfo info)
       encode_queue_(gst_element_factory_make("queue", "encode_queue")),
       sink_(gst_element_factory_make("webrtcbin", "sink")) {
 
+  // Read RTP_EXTERNAL_IP environment variable for Docker workarounds
+  const char* external_ip_env = std::getenv("RTP_EXTERNAL_IP");
+  if (external_ip_env) {
+    external_ip_ = external_ip_env;
+    std::cout << "Forcing ICE Candidate IP: " << external_ip_ << " (RTP_EXTERNAL_IP set)" << std::endl;
+  }
+
   g_object_set(sink_, "stun-server", "stun://stun.l.google.com:19302", NULL);
   g_signal_connect(sink_, "on-negotiation-needed", G_CALLBACK(VideoOutputPipeline::on_negotiation_needed_cb), this);
   g_signal_connect(sink_, "on-ice-candidate", G_CALLBACK(VideoOutputPipeline::on_ice_candidate_cb), this);
+  
+  // Monitor connection state changes
+  // Using static functions instead of lambdas for G_CALLBACK to avoid macro issues
+  
+  auto on_connection_state = +[](GstElement* webrtc, GParamSpec*, gpointer) {
+    GstWebRTCPeerConnectionState state;
+    g_object_get(webrtc, "connection-state", &state, NULL);
+    const char* state_str[] = {"new", "connecting", "connected", "disconnected", "failed", "closed"};
+    std::cout << "[WEBRTC] Connection state: " << state_str[state] << std::endl;
+  };
+  
+  g_signal_connect(sink_, "notify::connection-state", G_CALLBACK(on_connection_state), NULL);
+  
+  auto on_ice_state = +[](GstElement* webrtc, GParamSpec*, gpointer) {
+    GstWebRTCICEConnectionState state;
+    g_object_get(webrtc, "ice-connection-state", &state, NULL);
+    const char* state_str[] = {"new", "checking", "connected", "completed", "failed", "disconnected", "closed"};
+    std::cout << "[WEBRTC] ICE connection state: " << state_str[state] << std::endl;
+  };
+  
+  g_signal_connect(sink_, "notify::ice-connection-state", G_CALLBACK(on_ice_state), NULL);
 
   // Make the queues leaky to prevent stale data from being processed when the pipeline is not consuming data fast enough.
   g_object_set(convert_queue_, "max-size-buffers", 10, NULL);  // Keep only 3 frames
@@ -165,6 +196,19 @@ VideoOutputPipeline::VideoOutputPipeline(VideoOutputTrackInfo info)
     GstPadLinkReturn link_ret = gst_pad_link(src_pad, webrtc_sink_pad);
     if (link_ret != GST_PAD_LINK_OK) {
       std::cerr << "Failed to pad-link payload to webrtcbin: " << link_ret << std::endl;
+    } else {
+      // Get the transceiver and set its codec preference
+      GstWebRTCRTPTransceiver* transceiver = NULL;
+      g_signal_emit_by_name(sink_, "get-transceiver", 0, &transceiver);
+      
+      if (transceiver) {
+        GstCaps* codec_prefs = gst_caps_from_string(
+            "application/x-rtp,media=video,encoding-name=H264,payload=102,clock-rate=90000");
+        g_object_set(transceiver, "codec-preferences", codec_prefs, NULL);
+        gst_caps_unref(codec_prefs);
+        g_object_unref(transceiver);
+        std::cout << "Set H264 codec preferences on transceiver" << std::endl;
+      }
     }
   }
   if (src_pad) gst_object_unref(src_pad);
@@ -236,7 +280,13 @@ void VideoOutputPipeline::on_offer_created_cb(GstPromise* promise, gpointer user
 void VideoOutputPipeline::on_ice_candidate_cb(
     GstElement* /*webrtcbin*/, guint mlineindex, gchar* candidate, gpointer user_data) {
   auto* self = static_cast<VideoOutputPipeline*>(user_data);
-  self->send_ice_to_peer(mlineindex, candidate ? candidate : "");
+  std::string cand_str = candidate ? candidate : "";
+  std::cout << "[WEBRTC] Local ICE candidate (mline " << mlineindex << "): " 
+            << cand_str.substr(0, 60) << "..." << std::endl;
+  
+  // Apply ICE candidate modification if RTP_EXTERNAL_IP is set
+  std::string modified_cand = self->modify_ice_candidate(cand_str);
+  self->send_ice_to_peer(mlineindex, modified_cand);
 }
 
 void VideoOutputPipeline::apply_remote_sdp_answer(const std::string& answer_sdp) {
@@ -280,6 +330,46 @@ void VideoOutputPipeline::send_ice_to_peer(guint mlineindex, const std::string& 
   }
 }
 
+std::string VideoOutputPipeline::modify_ice_candidate(const std::string& candidate) {
+  // If RTP_EXTERNAL_IP is not set, return the candidate unchanged
+  if (external_ip_.empty()) {
+    return candidate;
+  }
+
+  // Parse ICE candidate format: candidate:foundation component protocol priority ip port typ type ...
+  // Example: candidate:1 1 UDP 2015363327 100.70.129.43 37738 typ host...
+  std::istringstream iss(candidate);
+  std::vector<std::string> parts;
+  std::string part;
+  
+  while (iss >> part) {
+    parts.push_back(part);
+  }
+
+  // We need at least 8 parts: candidate:N, component, protocol, priority, ip, port, typ, type
+  // Index 6 should be "typ" and index 7 should be "host" or similar
+  if (parts.size() > 7) {
+    // Check if this is a host candidate
+    if (parts[6] == "typ" && parts[7] == "host") {
+      // Replace the IP at index 4
+      std::string old_ip = parts[4];
+      parts[4] = external_ip_;
+      
+      // Rebuild the candidate string
+      std::ostringstream oss;
+      for (size_t i = 0; i < parts.size(); ++i) {
+        if (i > 0) oss << " ";
+        oss << parts[i];
+      }
+      
+      std::cout << "[WEBRTC] Modifying ICE candidate: " << old_ip << " -> " << external_ip_ << std::endl;
+      return oss.str();
+    }
+  }
+
+  return candidate;
+}
+
 bool VideoOutputPipeline::connect_signaling(const std::string& server_url, const std::string& room_id) {
   if (!signaling_client_) {
     std::cerr << "Signaling client not initialized" << std::endl;
@@ -303,16 +393,43 @@ bool VideoOutputPipeline::connect_signaling(const std::string& server_url, const
     this->on_signaling_error(error);
   });
 
+  // When peer is ready, start WebRTC negotiation
+  signaling_client_->set_on_peer_ready([this]() {
+    std::cout << "[SIGNALING] Peer is ready, starting negotiation..." << std::endl;
+    this->start_negotiation();
+  });
+
   return signaling_client_->connect(server_url, room_id, "sender");
+}
+
+void VideoOutputPipeline::start_negotiation() {
+  if (!sink_) {
+    std::cerr << "[WEBRTC] Error: webrtcbin is NULL" << std::endl;
+    return;
+  }
+
+  std::cout << "[WEBRTC] Creating offer..." << std::endl;
+  
+  GstPromise* promise = gst_promise_new_with_change_func(
+      VideoOutputPipeline::on_offer_created_cb, this, NULL);
+  
+  if (!promise) {
+    std::cerr << "[WEBRTC] Failed to create promise" << std::endl;
+    return;
+  }
+  
+  g_signal_emit_by_name(sink_, "create-offer", NULL, promise);
 }
 
 void VideoOutputPipeline::on_remote_sdp(const std::string& sdp) {
   std::cout << "[SIGNALING] Received remote SDP (" << sdp.size() << " bytes)" << std::endl;
+  std::cout << "[WEBRTC] Applying remote answer..." << std::endl;
   apply_remote_sdp_answer(sdp);
 }
 
 void VideoOutputPipeline::on_remote_ice(int sdp_mline_index, const std::string& candidate) {
-  std::cout << "[SIGNALING] Received remote ICE candidate (mline " << sdp_mline_index << ")" << std::endl;
+  std::cout << "[SIGNALING] Received remote ICE candidate (mline " << sdp_mline_index << "): " 
+            << candidate.substr(0, 60) << "..." << std::endl;
   add_remote_ice(static_cast<guint>(sdp_mline_index), candidate);
 }
 
@@ -323,3 +440,4 @@ void VideoOutputPipeline::on_signaling_connected() {
 void VideoOutputPipeline::on_signaling_error(const std::string& error) {
   std::cerr << "[SIGNALING] Error: " << error << std::endl;
 }
+

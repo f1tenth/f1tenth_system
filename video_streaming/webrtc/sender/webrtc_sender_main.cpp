@@ -106,13 +106,17 @@ int main(int argc, char* argv[]) {
 #endif
 
   VideoOutputPipeline pipeline(track_info);
-  pipeline.start();
-
+  
+  // Connect to signaling BEFORE starting pipeline to ensure we don't clear caps filter too early
   if (!pipeline.connect_signaling(server_url, room_id)) {
     std::cerr << "Failed to connect to signaling server" << std::endl;
-    pipeline.stop();
     return 1;
   }
+  
+  std::cout << "Signaling connected, waiting for peer..." << std::endl;
+  
+  // Start pipeline now
+  pipeline.start();
 
   std::cout << "WebRTC sender started. Signaling: " << server_url
             << ", room: " << room_id << std::endl;

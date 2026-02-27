@@ -14,9 +14,11 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - signaling
+    network_mode: "host"
     environment:
       GST_DEBUG: "2"
-    command: ["--server-url", "ws://signaling:8765", "--room-id", "f1tenth"]
+      RTP_EXTERNAL_IP: "10.13.176.151"
+    command: ["--server-url", "ws://localhost:8765", "--room-id", "f1tenth"]
 
   receiver_gui_linux:
     build:
@@ -25,12 +27,14 @@ services:
     depends_on:
       - signaling
     profiles: ["linux-gui"]
+    network_mode: "host"
     environment:
       DISPLAY: ${DISPLAY}
       GST_DEBUG: "2"
+      RTP_EXTERNAL_IP: "10.13.176.151"
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    command: ["--server-url", "ws://signaling:8765", "--room-id", "f1tenth"]
+    command: ["--server-url", "ws://localhost:8765", "--room-id", "f1tenth"]
 
   receiver_gui_windows:
     build:
@@ -39,11 +43,13 @@ services:
     depends_on:
       - signaling
     profiles: ["windows-gui"]
+    network_mode: "host"
     environment:
       DISPLAY: host.docker.internal:0.0
       GST_VIDEO_SINK: ximagesink
+      RTP_EXTERNAL_IP: "10.13.176.151"
       GST_DEBUG: "2"
-    command: ["--server-url", "ws://signaling:8765", "--room-id", "f1tenth"]
+    command: ["--server-url", "ws://localhost:8765", "--room-id", "f1tenth"]
 
   sender:
     build:

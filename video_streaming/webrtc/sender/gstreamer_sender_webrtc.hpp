@@ -69,6 +69,12 @@ class VideoOutputPipeline {
    */
   bool connect_signaling(const std::string& server_url, const std::string& room_id);
 
+  /**
+   * Begin the WebRTC negotiation process.
+   * Should be called after both sender and receiver join the room.
+   */
+  void start_negotiation();
+
  private:
   VideoOutputTrackInfo info_;
 
@@ -106,6 +112,8 @@ class VideoOutputPipeline {
 
   void send_sdp_to_peer(const std::string& sdp);
   void send_ice_to_peer(guint mlineindex, const std::string& candidate);
+  std::string modify_ice_candidate(const std::string& candidate);
 
   std::unique_ptr<SignalingClient> signaling_client_;
+  std::string external_ip_;  // For forcing specific IP in ICE candidates
 };
