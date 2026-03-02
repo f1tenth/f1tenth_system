@@ -115,7 +115,6 @@ int main(int argc, char* argv[]) {
   
   std::cout << "Signaling connected, waiting for peer..." << std::endl;
   
-  // Start pipeline now
   pipeline.start();
 
   std::cout << "WebRTC sender started. Signaling: " << server_url
