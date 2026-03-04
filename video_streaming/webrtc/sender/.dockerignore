@@ -1,8 +1,0 @@
-build/
-cmake-build-*/
-*.o
-*.obj
-*.pdb
-*.ilk
-*.pyc
-__pycache__/

@@ -23,17 +23,14 @@ def create_manual_joy_message(steer, gas):
     
     # 4. Axes (Sequence of float32)
     # originally the list was sequences, but that also gave us an error so I changed it
-    msg += struct.pack('<I', 4) 
-    # The Floats (0.0, gas, steer, 0.0)
+    msg += struct.pack('<I', 3) 
+    # The Floats (0.0, gas, steer)
     msg += struct.pack('<f', 0.0)
     msg += struct.pack('<f', float(gas))
     msg += struct.pack('<f', float(steer))
-    msg += struct.pack('<f', 0.0)
 
     # 5. Buttons (Sequence of int32)
-    msg += struct.pack('<I', 10)
-    for _ in range(10):
-        msg += struct.pack('<i', 0)
+    msg += struct.pack('<I', 0)
 
     return msg
 
@@ -73,23 +70,23 @@ try:
         pygame.event.pump()
         
         # # For steering wheel
-        raw_steer = joystick.get_axis(0)
-        raw_gas = joystick.get_axis(2)
-        raw_reverse = joystick.get_axis(3)
-
-        # # For XBOX controller (uncomment if needed)
         # raw_steer = joystick.get_axis(0)
-        # raw_gas = joystick.get_axis(1)
-        # raw_steer = -raw_steer if abs(raw_steer) > 0.03 else 0.0  # Deadzone for steering
-        # raw_gas = -raw_gas/4 if abs(raw_gas) > 0.03 else 0.0  # Invert because up is -1, and apply deadzone
+        # raw_gas = joystick.get_axis(2)
+        # raw_reverse = joystick.get_axis(3)
+
+        # For XBOX controller (uncomment if needed)
+        raw_steer = joystick.get_axis(0)
+        raw_gas = joystick.get_axis(1)
+        raw_steer = -raw_steer if abs(raw_steer) > 0.03 else 0.0  # Deadzone for steering
+        raw_gas = -raw_gas/4 if abs(raw_gas) > 0.03 else 0.0  # Invert because up is -1, and apply deadzone
 
 
-        # Normalize math for steering wheel
-        steer = float(-raw_steer)
-        gas = (1.0 - raw_gas) / 8.0
-        reverse = (1.0 - raw_reverse) / 8.0
-        if gas < 0.02 and reverse > 0.02:
-            gas = -reverse  # Use negative gas to indicate reverse
+        # # Normalize math for steering wheel
+        # steer = float(-raw_steer)
+        # gas = (1.0 - raw_gas) / 8.0
+        # reverse = (1.0 - raw_reverse) / 8.0
+        # if gas < 0.02 and reverse > 0.02:
+        #     gas = -reverse  # Use negative gas to indicate reverse
 
 
         # Normalize math for controller
