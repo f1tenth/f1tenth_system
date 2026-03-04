@@ -1,6 +1,6 @@
-# f1tenth_system
+# F1Tenth remote teleops
 
-Drivers onboard f1tenth race cars. This branch is under development for migration to ROS2. See the [documentation of F1TENTH](https://f1tenth.readthedocs.io/en/foxy_test/getting_started/firmware/index.html) on how to get started.
+This repo is with the assumption you have fully assembled your F1Tenth/RoboRacer vehicle and downloaded ROS2 Humble and the F1Tenth Stack(possible by git cloning this repo) and other related dependancies. If you haven't, follow their instructions to the best of your ability as some of the commands may be outdated: [RoboRacer Set-up instructions](https://f1tenth.readthedocs.io/en/foxy_test/getting_started/intro.html).
 
 ## Cloning submodules
 If you clone this repository, make sure to clone the submodules as well. You can do this by running:
@@ -11,153 +11,83 @@ git submodule update --init --recursive --remote
 
 This will ensure you have all the submodules cloned and updated to the configured branches.
 
-## Deadman's switch
-On Logitech F-710 joysticks, the LB button is the deadman's switch for teleop, and the RB button is the deadman's switch for navigation. You can also remap buttons. See how on the readthedocs documentation.
+## Launch Instructions
+These launch Instructions are under the assumption that your F1Tenth Racer and your cockpit are in the same network.
+### Command and Control Downlink
+#### Cockpit Side
+The attached script in `teleop_cockpit` is with the assumption that you are using an Xbox Controller or a Logitech G923 Steering wheel. You can use a different control mechanism just make sure the axis are mapped correctly. You can find out what output from your controller/wheel maps to what axis using `teleop_cockpit/test_controller.py`
 
-## Sick Lidar
+If you are on Windows or Mac you must natively run the cockpit code, not through docker. I recommend you create a virtual environment. You need a python 3.10-3.12 version. Simply run `python transmit_driving_inputs.py`
 
-Note that sick_scan_xd does not have an apt package for ROS2 foxy, you can try installing [from source](https://github.com/SICKAG/sick_scan_xd). Follow these steps to install sick_scan_xd on Linux for ROS 2 Humble:
+If you are using linux you can simply do `docker compose up` to launch and `docker compose down` to shut down. 
 
-```
-sudo apt update
-sudo apt-get install ros-humble-sick-scan-xd
-```
 
-**Warning:** Make sure to use the `sick_tim_5xx.launch` file located in the `f1tenth_stack` package's launch directory:
 
-`<f1tenth_stack>/launch/sick_tim_5xx.launch`
-
-Bring up with `ros2 launch f1tenth_stack sick_bringup_launch.py`. This file is an updated version of the original `sick_tim_5xx.launch` file that changes the "frame_id" to "laser" and "tf_base_frame_id" to "base_link", which is compatible with the slam_toolbox and particle filter. You will still need to set the IP address of the lidar in the launch file.
-
-Bring up with `ros2 launch f1tenth_stack sick_bringup_launch.py`
-
-See the [documentation of F1TENTH](https://f1tenth.readthedocs.io/en/foxy_test/getting_started/firmware/index.html) on how to get started.
-
-### Getting SICK Lidar IP
-
-The lidar is delivered with a standard IP address. There are two ways to read or change the IP address:
-
-1. **Using a Windows Computer :** Install [SICK SOPAS ET](https://www.sick.com/de/de/sopas-engineering-tool-2018/p/p367244) and follow [the instructions in the sick_scan_xd package](https://github.com/SICKAG/sick_scan_xd?tab=readme-ov-file#starting-with-a-new-lidar).
-
-2. **Using a Linux Computer :** You can scan the network for the lidar IP address using the following command:
-
+#### Jetson Side
+In one terminal cd into your F1Tenth/Roboracer Workspace then run the following
 ```bash
-nmap -sn
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+# If it's your first time launching or anything in the stack has changed, run “colcon build”
+ros2 launch f1tenth_stack bringup_launch.py
+```
+In another terminal run the following.
+```bash
+zenoh-bridge-ros2dds client -e tcp/<COCKPIT_IP>:7447
 ```
 
-If you have a SICK lidar connected to the network, you will see the IP address of the lidar in the output.
+### Camera Feed Uplink
+First download MediaMTX by running the following in a Jetson terminal.
+```bash
+# 1. Download the updated release
+wget https://github.com/bluenviron/mediamtx/releases/download/v1.15.3/mediamtx_v1.15.3_linux_arm64.tar.gz
 
-## Topics
+# 2. Extract it
+tar -zxvf mediamtx_v1.15.3_linux_arm64.tar.gz
+```
+In a Jetson terminal run
+```bash
+# 3. Run the server (Leave this terminal open)
+./mediamtx
+```
+Next download gstreamer using these commands.
+```bash
+sudo apt-get update
 
-### Topics that the driver stack subscribe to
-- `/drive`: Topic for autonomous navigation, uses `AckermannDriveStamped` messages.
+sudo apt-get install -y \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    libgstreamer-plugins-bad1.0-dev \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    gstreamer1.0-tools \
+    gstreamer1.0-x \
+    gstreamer1.0-alsa \
+    gstreamer1.0-gl \
+    gstreamer1.0-gtk3 \
+    gstreamer1.0-qt5 \
+    gstreamer1.0-pulseaudio \
+    gstreamer1.0-nice
+```
 
-### Sensor topics published by the driver stack
-- `/scan`: Topic for `LaserScan` messages.
-- `/odom`: Topic for `Odometry` messages.
-- `/sensors/imu/raw`: Topic for `Imu` messages.
-- `/sensors/core`: Topic for telemetry data from the VESC
-
-## External Dependencies
-
-1. ackermann_msgs [https://index.ros.org/r/ackermann_msgs/#humble](https://index.ros.org/r/ackermann_msgs/#humble).
-2. urg_node [https://index.ros.org/p/urg_node/#humble](https://index.ros.org/p/urg_node/#humble). This is the driver for Hokuyo LiDARs.
-3. joy [https://index.ros.org/p/joy/#humble](https://index.ros.org/p/joy/#humble). This is the driver for joysticks in ROS 2.
-4. teleop_tools  [https://index.ros.org/p/teleop_tools/#humble](https://index.ros.org/p/teleop_tools/#humble). This is the package for teleop with joysticks in ROS 2.
-5. vesc [GitHub - f1tenth/vesc at ros2](https://github.com/f1tenth/vesc/tree/ros2). This is the driver for VESCs in ROS 2.
-6. ackermann_mux [GitHub - f1tenth/ackermann_mux: Twist multiplexer](https://github.com/f1tenth/ackermann_mux). This is a package for multiplexing ackermann messages in ROS 2.
-<!-- 7. rosbridge_suite [https://index.ros.org/p/rosbridge_suite/#humble-overview](https://index.ros.org/p/rosbridge_suite/#humble-overview) This is a package that allows for websocket connection in ROS 2. -->
-
-## Package in this repo
-
-1. f1tenth_stack: maintains the bringup launch and all parameter files
-
-## Nodes launched in bringup
-
-1. joy
-2. joy_teleop
-3. ackermann_to_vesc_node
-4. vesc_to_odom_node
-5. vesc_driver_node
-6. urg_node
-7. ackermann_mux
-
-## Parameters and topics for dependencies
-
-### vesc_driver
-
-1. Parameters:
-   - duty_cycle_min, duty_cycle_max
-   - current_min, current_max
-   - brake_min, brake_max
-   - speed_min, speed_max
-   - position_min, position_max
-   - servo_min, servo_max
-2. Publishes to:
-   - sensors/core
-   - sensors/servo_position_command
-   - sensors/imu
-   - sensors/imu/raw
-3. Subscribes to:
-   - commands/motor/duty_cycle
-   - commands/motor/current
-   - commands/motor/brake
-   - commands/motor/speed
-   - commands/motor/position
-   - commands/servo/position
-
-### ackermann_to_vesc
-
-1. Parameters:
-   - speed_to_erpm_gain
-   - speed_to_erpm_offset
-   - steering_angle_to_servo_gain
-   - steering_angle_to_servo_offset
-2. Publishes to:
-   - ackermann_cmd
-3. Subscribes to:
-   - commands/motor/speed
-   - commands/servo/position
-
-### vesc_to_odom
-
-1. Parameters:
-   - odom_frame
-   - base_frame
-   - use_servo_cmd_to_calc_angular_velocity
-   - speed_to_erpm_gain
-   - speed_to_erpm_offset
-   - steering_angle_to_servo_gain
-   - steering_angle_to_servo_offset
-   - wheelbase
-   - publish_tf
-2. Publishes to:
-   - odom
-3. Subscribes to:
-   - sensors/core
-   - sensors/servo_position_command
-
-### throttle_interpolator
-
-1. Parameters:
-   - rpm_input_topic
-   - rpm_output_topic
-   - servo_input_topic
-   - servo_output_topic
-   - max_acceleration
-   - speed_max
-   - speed_min
-   - throttle_smoother_rate
-   - speed_to_erpm_gain
-   - max_servo_speed
-   - steering_angle_to_servo_gain
-   - servo_smoother_rate
-   - servo_max
-   - servo_min
-   - steering_angle_to_servo_offset
-2. Publishes to:
-   - topic described in rpm_output_topic
-   - topic described in servo_output_topic
-3. Subscribes to:
-   - topic described in rpm_input_topic
-   - topic described in servo_input_topic
+In another Jetson terminal run 
+```bash
+gst-launch-1.0 v4l2src device=/dev/video0 ! \
+image/jpeg,width=1280,height=720,framerate=30/1 ! \
+jpegdec ! \
+videoconvert ! \
+x264enc speed-preset=ultrafast tune=zerolatency bitrate=2000 ! \
+rtspclientsink location=rtsp://localhost:8554/cam
+```
+The NVIDIA Jetson Orin Nano doesn't come with a H264 ENCODER so this gstreamer pipeline uses CPU H264 Encoding with ultrafast and zerolatency presets. You may have to tinker with the width, height, and framerate as each camera has different accepted formats. If it doesn't work, run the following to find out what those formats are.
+```bash
+#Install v4l Package
+sudo apt-get install v4l-utils
+#List Cameras
+v4l2-ctl --list-devices
+#Pick your device(/dev/video0 as an example)
+v4l2-ctl -d dev/video0 --list-formats-ext
+```
