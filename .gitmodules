@@ -9,3 +9,6 @@
 	path = teleop_tools
 	url = https://github.com/f1tenth/teleop_tools.git
 	branch = humble-devel
+[submodule "slam_toolbox_panel"]
+	path = slam_toolbox_panel
+	url = https://github.com/taherk-robo/slam_toolbox_panel
