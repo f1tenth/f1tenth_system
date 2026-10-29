@@ -23,10 +23,11 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration
 from launch_ros.actions import Node
+import yaml
 
 
 def generate_launch_description():
@@ -105,12 +106,22 @@ def generate_launch_description():
         name='ackermann_to_vesc_node',
         parameters=[LaunchConfiguration('vesc_config')]
     )
-    vesc_to_odom_node = Node(
-        package='vesc_ackermann',
-        executable='vesc_to_odom_node',
-        name='vesc_to_odom_node',
-        parameters=[LaunchConfiguration('vesc_config')]
-    )
+    def vesc_to_odom(context):
+        vesc_config = LaunchConfiguration('vesc_config').perform(context)
+        params = [vesc_config]
+        # stack_master configs keep the wheelbase in car_model.yaml next to vesc.yaml
+        car_model = os.path.join(os.path.dirname(vesc_config), 'car_model.yaml')
+        if os.path.exists(car_model):
+            with open(car_model) as f:
+                car = yaml.safe_load(f)
+            params.append({'wheelbase': car['lf'] + car['lr']})
+        return [Node(
+            package='vesc_ackermann',
+            executable='vesc_to_odom_node',
+            name='vesc_to_odom_node',
+            parameters=params
+        )]
+    vesc_to_odom_node = OpaqueFunction(function=vesc_to_odom)
     vesc_driver_node = Node(
         package='vesc_driver',
         executable='vesc_driver_node',
