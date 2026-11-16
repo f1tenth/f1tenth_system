@@ -72,8 +72,8 @@ def generate_launch_description():
     ld = LaunchDescription([joy_la, vesc_la, sensors_la, mux_la])
 
     joy_node = Node(
-        package='joy',
-        executable='joy_node',
+        package='joy_linux',
+        executable='joy_linux_node',
         name='joy',
         parameters=[LaunchConfiguration('joy_config')]
     )

@@ -9,9 +9,9 @@
 
   <depend>ackermann_msgs</depend>
   <depend>urg_node</depend>
-  <depend>joy</depend>
+  <depend>joy_linux</depend>
   <depend>joy_teleop</depend>
-  <depend>rosbridge_server</depend>
+  <depend>foxglove_bridge</depend>
   <depend>vesc</depend>
   <depend>ackermann_mux</depend>
   <depend>std_msgs</depend>
